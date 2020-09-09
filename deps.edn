@@ -1,5 +1,10 @@
 {:paths ["src" "resources" "classes"]
  :deps {tolitius/inquery {:mvn/version "0.1.13"}
+        aesahaettr {:mvn/version "0.1.2" :exclusions [com.taoensso/nippy
+                                                      org.clojure/clojure
+                                                      com.google.guava/guava]}
+        com.taoensso/nippy {:mvn/version "2.15.2"}
+        com.google.guava/guava {:mvn/version "29.0-jre"}
         seancorfield/next.jdbc {:mvn/version "1.1.582"}}
  :aliases {:dev {:extra-paths ["dev"]
                  ;; :main-opts ["-i" "dev/dev.clj" "-e" "(in-ns,'dev)"]

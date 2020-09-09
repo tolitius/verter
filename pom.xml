@@ -26,6 +26,45 @@
   </scm>
   <dependencies>
     <dependency>
+      <groupId>aesahaettr</groupId>
+      <artifactId>aesahaettr</artifactId>
+      <version>0.1.2</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.clojure</groupId>
+          <artifactId>clojure</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.taoensso</groupId>
+          <artifactId>nippy</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>29.0-jre</version>
+    </dependency>
+    <dependency>
+      <groupId>com.taoensso</groupId>
+      <artifactId>nippy</artifactId>
+      <version>2.15.2</version>
+    </dependency>
+    <dependency>
+      <groupId>tolitius</groupId>
+      <artifactId>inquery</artifactId>
+      <version>0.1.13</version>
+    </dependency>
+    <dependency>
+      <groupId>seancorfield</groupId>
+      <artifactId>next.jdbc</artifactId>
+      <version>1.1.582</version>
+    </dependency>
+    <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>clojure</artifactId>
       <version>1.10.1</version>
