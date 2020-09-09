@@ -1,0 +1,11 @@
+{:verter {:datasource {:connection-timeout 30000
+                       :read-only          true
+                       :idle-timeout       60000
+                       :max-lifetime       60000
+                       :minimum-idle       4
+                       :maximum-pool-size  10
+                       :adapter            "postgresql"
+                       :url                "OVERRIDE ME"   ;; these come from ENV (i.e. export VERTER__DATASOURCE__XYZ=...)
+                       :username           "OVERRIDE ME"
+                       :password           "OVERRIDE ME"}
+          :queries    #{:create-institute-of-time}}}

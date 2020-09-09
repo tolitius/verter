@@ -1,0 +1,15 @@
+{:paths ["src" "resources" "classes"]
+ :deps {tolitius/inquery {:mvn/version "0.1.13"}
+        seancorfield/next.jdbc {:mvn/version "1.1.582"}}
+ :aliases {:dev {:extra-paths ["dev"]
+                 ;; :main-opts ["-i" "dev/dev.clj" "-e" "(in-ns,'dev)"]
+                 :extra-deps {tolitius/yang {:mvn/version "0.1.20"}
+                              cprop {:mvn/version "0.1.17"}
+                              hikari-cp/hikari-cp {:mvn/version "2.13.0"}
+                              org.postgresql/postgresql {:mvn/version "42.2.10"}}}
+           :jar {:extra-deps {seancorfield/depstar {:mvn/version "1.1.104"}}
+                 :main-opts ["-m" "hf.depstar.jar" "verter.jar" "--exclude" "clojure/core/specs/alpha.*"]}
+           :install {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.9"}}
+                     :main-opts ["-m" "deps-deploy.deps-deploy" "install" "verter.jar"]}
+           :deploy {:extra-deps {deps-deploy/deps-deploy {:mvn/version "0.0.9"}}
+                    :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "verter.jar" "true"]}}}
