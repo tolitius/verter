@@ -51,8 +51,6 @@
 (defrecord Postgres [ds schema queries]
   v/Identity
 
-  (now [this id])                                         ;; rollup of facts for this identity
-
   (as-of [this id ts])                                    ;; rollup of facts for this identity up until a timestamp
 
   (facts [{:keys [ds schema queries]} id]                 ;; all the facts ever added in order

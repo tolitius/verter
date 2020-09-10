@@ -5,7 +5,7 @@
             [verter.tools :as vt]))
 
 (defprotocol Identity
-  (now [this id])                ;; rollup of facts for this identity up until now
+  (now [this id])
   (as-of [this id ts])           ;; rollup of facts for this identity up until a timestamp
   (facts [this id])              ;; all the facts ever added in order
   (add-facts [this facts])       ;; add one or more facts
@@ -40,3 +40,14 @@
       nippy/thaw
       (assoc :id (edn/read-string key)
              :at at)))
+
+(defn- merge-asc [facts]
+  (->> facts
+       (apply merge)
+       vt/remove-nil-vals))
+
+(defn rollup
+  "rollup of facts for this identity up until now"
+  [db id]
+  (-> (facts db id)
+      merge-asc))

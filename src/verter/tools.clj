@@ -11,3 +11,9 @@
 
 (defn now []
   (java.time.Instant/now))
+
+(defn remove-nil-vals [m]
+  (->> (for [[k v] m]
+         (when-not (nil? v)
+           [k v]))
+       (into {})))
