@@ -12,20 +12,22 @@
   (println "[verter] connecting to the database..")
   (let [{:keys [datasource queries]} (-> (c/load-config)
                                          :verter)]
-    {:queries    (q/make-query-map queries
-                                   {:path "verter/store/postgres"})
-     :datasource (hk/make-datasource datasource)}))
+    (hk/make-datasource datasource)))
 
-(defn stop-db [{:keys [datasource]}]
+(defn stop-db [datasource]
  (hk/close-datasource datasource))
 
-(defn execute-sql! [{:keys [datasource]} sql]
+(defn execute-sql! [datasource sql]
   (with-open [conn (jdbc/get-connection datasource)]
     (jdbc/execute! conn [sql])))
 
+; $ clojure -A:dev -A:repl
+
 ; (require 'dev)(in-ns 'dev)
 ; (def db (start-db))
-; (def v (vp/connect (:datasource db)))
+; (def v (vp/connect db))
 
-; (vc/facts v :foo/bar/v2)
 ; (vc/add-facts v [{:id :foo/bar/v1 :zoo 34} [{:id :foo/bar/v2 :baz 35} #inst "2019-09-09"]])
+; (vc/facts v :foo/bar/v2)
+
+; (stop-db db)
