@@ -28,6 +28,9 @@
 
 ; (require 'dev)(in-ns 'dev)
 ; (def db (start-db))
+
+; ; (vp/create-institute-of-time db) ;; only if it is not already created
+
 ; (def verter (vp/connect db))
 
 ; (v/add-facts verter [{:id :universe/one :suns 12 :planets #{:one :two :three}}

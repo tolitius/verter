@@ -61,8 +61,9 @@
                   (q/with-params {:key (str id)
                                   :schema {:as schema}}))]
       (with-open [conn (jdbc/get-connection ds)]
-        (mapv v/from-row (jdbc/execute! conn [sql]
-                                        {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})))))
+        (->> (jdbc/execute! conn [sql]
+                            {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+             (mapv v/from-row)))))
 
   (add-facts [{:keys [ds schema queries] :as db} facts]   ;; add one or more facts
     (when (seq facts)
