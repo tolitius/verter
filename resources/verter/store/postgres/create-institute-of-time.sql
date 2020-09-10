@@ -22,6 +22,10 @@ alter table :schema.facts add constraint fact_uq unique (key, hash);
 create index if not exists business_time_idx on :schema.facts (at desc);
 create index if not exists key_idx on :schema.facts (key desc);
 
+-- TODO: think about whether a two way connection is needed b/w a fact and its transaction
+--       currently a transaction will have all fact hashes stored
+--       but there is no way to link back: i.e. a fact to a transaction, which is ok for now
+--       it'll all depend on how transaction recrods are used: indices, replay, rollback, etc.
 
 create table if not exists :schema.transactions (
 

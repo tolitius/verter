@@ -17,6 +17,7 @@
                      :find-facts-by-key
                      :find-facts-as-of
                      :add-facts
+                     :record-transaction
                      :obliterate-identity]
                     {:path (str "verter/store/" store)}))
 
@@ -25,10 +26,13 @@
                                          (sequential? fact) fact
                                          :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
                                                                {:fact fact})))
-        fval (dissoc fact :id)]
+        fval (dissoc fact :id)
+        to-hash (if (= at tx-time)
+                  fval              ;; if no business time provided, hash only the fact value
+                  [fval (str at)])] ;; if business time provided, include it in a hash to make sure to record if it changed
     [(str id)
      (nippy/freeze fval)
-     (vt/hash-it fval)
+     (vt/hash-it to-hash)
      at]))
 
 (defn from-row [{:keys [key value at]}]
@@ -36,4 +40,3 @@
       nippy/thaw
       (assoc :id (edn/read-string key)
              :at at)))
-

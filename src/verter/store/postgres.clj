@@ -3,6 +3,8 @@
             [next.jdbc.sql.builder :as qb]
             [next.jdbc.date-time]
             [next.jdbc.result-set :as jdbcr]
+            [clojure.edn :as edn]
+            [taoensso.nippy :as nippy]
             [verter.core :as v]
             [verter.tools :as vt]
             [inquery.core :as q]))
@@ -18,14 +20,42 @@
                             do nothing"]
     (concat [(str qhead qfoot)] data)))
 
+(defn- inserted-hashes [facts]
+  (reduce (fn [a {:keys [hash key]}]
+            (-> a
+                (update :hashes conj hash)
+                (update :kvs conj {:key (edn/read-string key)
+                                   :hash hash})))
+    {:hashes [] :kvs []}
+    facts))
+
+(defn- record-transaction [{:keys [ds schema queries]}
+                           tx-time inserted]
+  (let [{:keys [kvs hashes]} (inserted-hashes inserted)
+        sql (-> (queries :record-transaction)
+                (q/with-params {:schema {:as schema}}))]
+    (->> (jdbc/execute! ds [sql tx-time (nippy/freeze hashes)]
+                            {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+         (mapv (fn [{:keys [id at]}]
+                 {:tx-id id
+                  :at at
+                  :facts kvs})))))
+
+(defn- record-facts [ds facts tx-time]
+  (let [sql (make-insert-batch-query facts tx-time)
+        recorded (jdbc/execute! ds sql
+                                {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})]
+    (or (seq recorded)
+        (println "no changes to identities were detected, and hence, these facts" facts "were NOT added at" (str tx-time)))))
+
 (defrecord Postgres [ds schema queries]
   v/Identity
 
-  (now [this id])                                   ;; rollup of facts for this identity
+  (now [this id])                                         ;; rollup of facts for this identity
 
-  (as-of [this id ts])                              ;; rollup of facts for this identity up until a timestamp
+  (as-of [this id ts])                                    ;; rollup of facts for this identity up until a timestamp
 
-  (facts [{:keys [ds schema queries]} id]           ;; all the facts ever added in order
+  (facts [{:keys [ds schema queries]} id]                 ;; all the facts ever added in order
     (let [sql (-> queries
                   :find-facts-by-key
                   (q/with-params {:key (str id)
@@ -34,17 +64,14 @@
         (mapv v/from-row (jdbc/execute! conn [sql]
                                         {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})))))
 
-  (add-facts [{:keys [ds schema]} facts]            ;; add one or more facts
+  (add-facts [{:keys [ds schema queries] :as db} facts]   ;; add one or more facts
     (when (seq facts)
-      (let [query (make-insert-batch-query facts
-                                           (vt/now))] ;; tx time
+      (let [tx-time (vt/now)]
         (jdbc/with-transaction [tx ds]
-          (jdbc/execute! ds query
-                         {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
-          ;; TODO: add one insert into transactions table
-          ))))
+          (some->> (record-facts ds facts tx-time)
+                   (record-transaction db tx-time))))))
 
-  (obliterate [this id]))                           ;; "big brother" move: idenitity never existed
+  (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
 
 (defn connect
   ([ds]
