@@ -7,5 +7,4 @@
                        :adapter            "postgresql"
                        :url                "OVERRIDE ME"   ;; these come from ENV (i.e. export VERTER__DATASOURCE__XYZ=...)
                        :username           "OVERRIDE ME"
-                       :password           "OVERRIDE ME"}
-          :queries    #{:create-institute-of-time}}}
+                       :password           "OVERRIDE ME"}}}
