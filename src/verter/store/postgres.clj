@@ -48,20 +48,26 @@
     (or (seq recorded)
         (println "no changes to identities were detected, and hence, these facts" facts "were NOT added at" (str tx-time)))))
 
+(defn- find-facts
+  "find all the facts about identity upto a certain time"
+  [{:keys [ds schema queries]} id ts]
+  (let [sql (-> queries
+                :find-facts-up-to
+                (q/with-params {:key (str id)
+                                :schema {:as schema}}))]
+    (with-open [conn (jdbc/get-connection ds)]
+      (->> (jdbc/execute! conn [sql ts]
+                          {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+           (mapv v/from-row)))))
+
 (defrecord Postgres [ds schema queries]
   v/Identity
 
-  (as-of [this id ts])                                    ;; rollup of facts for this identity up until a timestamp
+  (facts [this id]                                        ;; find facts up until now
+     (find-facts this id (vt/now)))
 
-  (facts [{:keys [ds schema queries]} id]                 ;; all the facts ever added in order
-    (let [sql (-> queries
-                  :find-facts-by-key
-                  (q/with-params {:key (str id)
-                                  :schema {:as schema}}))]
-      (with-open [conn (jdbc/get-connection ds)]
-        (->> (jdbc/execute! conn [sql]
-                            {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
-             (mapv v/from-row)))))
+  (facts [this id ts]                                     ;; find facts up until a given time
+     (find-facts this id ts))
 
   (add-facts [{:keys [ds schema queries] :as db} facts]   ;; add one or more facts
     (when (seq facts)

@@ -5,19 +5,22 @@
             [verter.tools :as vt]))
 
 (defprotocol Identity
-  (now [this id])
-  (as-of [this id ts])           ;; rollup of facts for this identity up until a timestamp
-  (facts [this id])              ;; all the facts ever added in order
-  (add-facts [this facts])       ;; add one or more facts
-  (obliterate [this id]))        ;; "big brother" move: idenitity never existed
+  (facts [this id]
+         [this id ts]
+    "find all the facts about the identity until now or a given time")
+
+  (add-facts [this facts]
+    "add one or more facts with or without time specified
+     if time is not specified, a single transaction time is used")
+
+  (obliterate [this id]
+     "'big brother' move: the idenitity never existed"))
 
 (defn load-queries [store]
   (q/make-query-map [:create-institute-of-time
-                     :find-identity-by-key
-                     :find-facts-by-key
-                     :find-facts-as-of
-                     :add-facts
                      :record-transaction
+                     :find-facts-up-to
+                     :add-facts
                      :obliterate-identity]
                     {:path (str "verter/store/" store)}))
 
@@ -45,6 +48,12 @@
   (->> facts
        (apply merge)
        vt/remove-nil-vals))
+
+(defn as-of
+  "rollup of facts for this identity up until / as of a given time"
+  [db id ts]
+  (-> (facts db id ts)
+      merge-asc))
 
 (defn rollup
   "rollup of facts for this identity up until now"
