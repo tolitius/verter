@@ -16,7 +16,7 @@
             ; ^{:static true} [asOf [verter.core.Identity String java.time.Instant] java.util.Map]
             ])
 
-;; a Java friendly faces
+;; Java friendly faces
 
 (defn -connect [dbtype datasource]
   (vs/connect (keyword dbtype)
