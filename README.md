@@ -5,6 +5,9 @@
 [verter](https://ru.wikipedia.org/wiki/%D0%A0%D0%BE%D0%B1%D0%BE%D1%82_%D0%92%D0%B5%D1%80%D1%82%D0%B5%D1%80) is a curator of institute of time.</br>
 his most famous adventure takes place in the year of 2084..
 
+[![<! release](https://img.shields.io/badge/dynamic/json.svg?label=release&url=https%3A%2F%2Fclojars.org%2Ftolitius%2Fverter%2Flatest-version.json&query=version&colorB=blue)](https://github.com/tolitius/verter/releases)
+[![<! clojars](https://img.shields.io/clojars/v/tolitius/verter.svg)](https://clojars.org/tolitius/verter)
+
 - [what and why](#what-and-why)
 - [how to play](#how-to-play)
     - [create a datasource](#create-a-datasource)
