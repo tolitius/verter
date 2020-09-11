@@ -32,7 +32,7 @@ it _relies_ on one though to manage records about identities in space and time.
 in contrast to [crux](https://github.com/juxt/crux), [datomic](https://github.com/Datomic) and other temporal databases
 the idea behind verter is not to be your database, but to live "inside" an _existing_ database to provide audit, history and other bitemporal human needs.
 
-verter is influenced by work that is done by [crux](https://github.com/juxt/crux) team. if a bitemporal solution is what you are after, where all the data can live in crux, you should just start using crux instead. verter is for use cases where you already have a database / data store.
+verter is influenced by work that is done by the [crux](https://github.com/juxt/crux) team. if a bitemporal solution is what you are after, where all the data can live in crux, you should just start using crux instead. verter is for use cases where you already have a database / data store.
 
 # how to play
 
@@ -132,7 +132,7 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
 [{:answer 42, :id :universe/sixty-six, :at #inst "2020-09-10T17:24:18.697297000-00:00"}]
 ```
 
-`facts` will return changes to fact "attributes":
+`facts` will return changes to an identity "attributes":
 
 ```clojure
 => (v/facts verter :universe/one)
@@ -147,7 +147,7 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
   :at #inst "2020-09-10T17:33:13.712498000-00:00"}]
 ```
 
-as well as business time changes:
+as well as "business time" changes:
 
 ```clojure
 => (v/facts verter :universe/two)
@@ -241,17 +241,17 @@ this can be done with `v/rollup`:
  :life? true}
 ```
 
-one interesting "fact" about this rollup example: the moon.
-the last fact about the moon is that it is "nil", hence while it still shows up in the list of facts, unless it has a value, it won'tshow up in a rollup.
+one interesting "fact" about this rollup example: the `moons`.
+the last fact about the `moons` is that it is "nil", hence while it still shows up in the list of facts, unless it has a value, it won't show up in a rollup.
 
 ## identity "as of"
 
-similarly to "identity rollup", we can look at identity at a given point in time a.k.a. "as-of" time:
+similarly to "identity rollup", we can look at identity at a given point in time a.k.a. "as of" time:
 
-let's add a fact about the moon right before that transaction with 3 facts above:
+let's add a fact about the moons right before that transaction with 3 facts above:
 
 ```clojure
-=> (v/add-facts verter [[{:id :universe/sixty-six :moon 13} #inst "2020-09-11T00:18:03"]])
+=> (v/add-facts verter [[{:id :universe/sixty-six :moons 13} #inst "2020-09-11T00:18:03"]])
 ```
 
 now `:universe/sixty-six` looks like this:
@@ -271,12 +271,12 @@ now `:universe/sixty-six` looks like this:
  {:moons nil,
   :id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
- {:moon 13,
+ {:moons 13,
   :id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:03.000000000-00:00"}]
 ```
 
-see that last fact about the moon, but with the earlier business time?
+see that last fact about the moons, but with the earlier business time?
 
 let's look at this identity (`:universe/sixty-six`) upto this business time:
 
@@ -286,20 +286,20 @@ let's look at this identity (`:universe/sixty-six`) upto this business time:
 {:answer 42,
  :id :universe/sixty-six,
  :at #inst "2020-09-11T00:18:03.000000000-00:00",
- :moon 13}
+ :moons 13}
 ```
 
-at "2020-09-11T00:18:03" this universe had 13 moons and the answer was and still is.. 42.
+as of "`2020-09-11T00:18:03`" this universe had 13 moons and the answer was and still is.. 42.
 
 # useless benchmarks
 
-since most of the work is done directly against the database, let's pretend the asking party is colocated with such database:
+since most of the work is done directly against the database, let's pretend the asking party is collocated with such database:
 
-these are the numbers on top of postgres:
+these are the numbers on top of Postgres:
 
 ## writes
 
-we'll create new universes to avoid "do nothing" tricks on hash matches:
+we'll create a few new universes to avoid "do nothing" tricks verter does on hash matches:
 
 ```clojure
 => (def u40 (mapcat #(vector {:id :universe/forty     :moons % :suns %}) (range 5500)))
@@ -317,7 +317,8 @@ and add them sequentially in a single thread, not even "pmap":
 "Elapsed time: 1009.084383 msecs"
 ```
 
-3 * 5500 = 16,500 a second. later we'll play with type hints as well, but the most time will always be in I/O. so this is close.
+3 * 5500 = 16,500 a second.<br/>
+later we'll play with type hints as well, but the most time will always be in I/O, so this is close.
 
 ## reads
 
