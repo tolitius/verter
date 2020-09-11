@@ -1,5 +1,6 @@
 {:paths ["src" "resources" "classes"]
  :deps {tolitius/inquery {:mvn/version "0.1.13"}
+        org.clojure/java.data {:mvn/version "1.0.86"}
         aesahaettr {:mvn/version "0.1.2" :exclusions [com.taoensso/nippy
                                                       org.clojure/clojure
                                                       com.google.guava/guava]}

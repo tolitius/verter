@@ -53,9 +53,9 @@ until now there is nothing verter specific, we just creating a datasource. check
 
 ```clojure
 => (require '[verter.core :as v]
-            '[verter.store.postgres :as vp])
+            '[verter.store :as vs])
 
-=> (def verter (vp/connect db))
+=> (def verter (vs/connect :postgres db))
 ```
 
 ### create institute of time

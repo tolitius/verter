@@ -5,6 +5,7 @@
            [next.jdbc :as jdbc]
            [next.jdbc.result-set :as rs]
            [verter.core :as v]
+           [verter.store :as vs]
            [verter.store.postgres :as vp]
            [clojure.repl :as repl]
            [clojure.pprint :as pp]))
@@ -31,7 +32,7 @@
 
 ; ; (vp/create-institute-of-time db) ;; only if it is not already created
 
-; (def verter (vp/connect db))
+; (def verter (vs/connect :postgres db))
 
 ; (v/add-facts verter [{:id :universe/one :suns 12 :planets #{:one :two :three}}
 ;                      [{:id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
