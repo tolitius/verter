@@ -82,12 +82,12 @@ in case this is the first time verter is used with this database, the institute 
 
 there are a few things to mention here:
 
-* every fact needs to have an `:id`
-* fact about `:universe/two` was given a "business time"
+* every identity needs to have an `:id`
+* facts about `:universe/two` were given a "business time"
 * other facts will assume that their business time is the transaction time
 * all these facts were recorded in a single transaction
-* this transaction id ("tx-id") is `10`
-* facts that _were_ recorded came back in keys and content hashes.
+* this transaction id ("`tx-id`") is `10`
+* identities with facts that _were_ recorded came back in keys and content hashes.
 
 ## don't record what is already known
 
