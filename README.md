@@ -10,9 +10,9 @@ his most famous adventure takes place in the year of 2084..
 
 - [what and why](#what-and-why)
 - [how to play](#how-to-play)
-    - [create a datasource](#create-a-datasource)
-    - [allow verter in](#allow-verter-in)
-    - [create institute of time](#create-institute-of-time)
+  - [create a datasource](#create-a-datasource)
+  - [allow verter in](#allow-verter-in)
+  - [create institute of time](#create-institute-of-time)
 - [adding facts](#adding-facts)
   - [don't record what is already known](#dont-record-what-is-already-known)
 - [looking at facts](#looking-at-facts)
@@ -20,6 +20,9 @@ his most famous adventure takes place in the year of 2084..
   - [identity now](#identity-now)
   - [identity "as of"](#identity-as-of)
 - [add data store](#add-data-store)
+  - [implement `Identity` protocol](#implement-identity-protocol)
+  - [add a `connect` function](#add-a-connect-function)
+  - [create schema](#create-schema)
 - [useless benchmarks](#useless-benchmarks)
   - [writes](#writes)
   - [reads](#reads)
@@ -294,9 +297,23 @@ as of "`2020-09-11T00:18:03`" this universe had 13 moons and the answer was and 
 
 # add data store
 
+supported data stores:
+| data store | supported  | in progress  |
+|---|:-:|:-:|
+| PostreSQL  | :white_check_mark: |   |
+| MySQL  |  |   |
+| Redis  |  |   |
+| Cassandra  |  |   |
+| Couchbase  |  |   |
+| MsSQL  |  |   |
+| Oracle  |  |   |
+| Your store  |  |   |
+
+:heart: consider contributing to add a support for a data store that is used by your applications.
+
 adding a missing data store comes down to 1, 2, 3
 
-## implement `Identity` protocol
+### implement `Identity` protocol
 
 ```clojure
 (defprotocol Identity
@@ -309,24 +326,28 @@ adding a missing data store comes down to 1, 2, 3
      if time is not specified, a single transaction time is used")
 
   (obliterate [this id]
-     "'big brother' move: the idenitity never existed"))
+    "'big brother' move: the idenitity never existed"))
 ```
 
 take a look at [postgres](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/src/verter/store/postgres.clj#L63-L77) implementation to get an idea.
 
-## add a `connect` function
+### add a `connect` function
 
 take a look at [postgres](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/src/verter/store/postgres.clj#L81-L87) connect function.
 
 the idea is to take a datasource of an existing data store and create an instance of the `Identity` protocol above.
 
-## create schema
+### create schema
 
 depending on what a data store is you might (or not) need to create a schema where verter will keep facts about identities and transactions. i.e. make a function that will create a schema.
 
 of course redis "schema" would probably be just a couple of bucket names vs. a SQL database schema would need to create a couple of tables.
 
 take a look at the [postgres schema](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/resources/verter/store/postgres/create-institute-of-time.sql) to get an idea.
+
+----
+
+if you are interested and/or need more details, just open an [issue](https://github.com/tolitius/verter/issues), and let's talk
 
 # useless benchmarks
 
