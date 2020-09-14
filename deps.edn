@@ -1,6 +1,5 @@
 {:paths ["src" "resources" "classes"]
  :deps {tolitius/inquery {:mvn/version "0.1.13"}
-        org.clojure/java.data {:mvn/version "1.0.86"}
         aesahaettr {:mvn/version "0.1.2" :exclusions [com.taoensso/nippy
                                                       org.clojure/clojure
                                                       com.google.guava/guava]}
@@ -10,6 +9,7 @@
  :aliases {:dev {:extra-paths ["dev"]
                  ;; :main-opts ["-i" "dev/dev.clj" "-e" "(in-ns,'dev)"]
                  :extra-deps {tolitius/yang {:mvn/version "0.1.20"}
+                              tolitius/calip {:mvn/version "0.1.5"}
                               cprop {:mvn/version "0.1.17"}
                               hikari-cp/hikari-cp {:mvn/version "2.13.0"}
                               org.postgresql/postgresql {:mvn/version "42.2.16"}}}
