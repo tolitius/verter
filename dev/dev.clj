@@ -26,19 +26,20 @@
                    {:return-keys true
                     :builder-fn rs/as-unqualified-lower-maps})))
 
-(defn measure-it []
-  (calip/measure #{#'verter.store.postgres/make-insert-batch-query
+;; performance corner
+
+(def to-measure #{#'verter.store.postgres/make-insert-batch-query
                    #'verter.store.postgres/record-transaction
                    #'verter.store.postgres/record-facts
-                   #'next.jdbc/execute!}
+                   #'next.jdbc/execute!})
+
+(defn measure-it []
+  (calip/measure to-measure
                  {:report (fn [{:keys [took fname]}]
                             (println (format "%s took %,d ns" fname took)))}))
 
 (defn unmeasure-it []
-  (calip/uncalip #{#'verter.store.postgres/make-insert-batch-query
-                   #'verter.store.postgres/record-transaction
-                   #'verter.store.postgres/record-facts
-                   #'next.jdbc/execute!}))
+  (calip/uncalip to-measure))
 
 ; $ clojure -A:dev -A:repl
 
