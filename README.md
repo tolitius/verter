@@ -64,7 +64,7 @@ until now there is nothing verter specific, we just creating a datasource. check
 
 ### create institute of time
 
-in case this is the first time verter is used with this database, the institute of time (verter tables) need to be created:
+in case this is the first time verter is used with this database, the institute of time (verter tables/buckets) need to be created:
 
 ```clojure
 => (vs/create-institute-of-time :postgres db)
@@ -86,7 +86,7 @@ in case this is the first time verter is used with this database, the institute 
 
 there are a few things to mention here:
 
-* every identity needs to have an `:verter/id`
+* every identity needs to have a `:verter/id`
 * facts about `:universe/two` were given a "business time"
 * other facts will assume that their business time is the transaction time
 * all these facts were recorded in a single transaction
@@ -136,7 +136,7 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
 [{:answer 42, :verter/id :universe/sixty-six, :at #inst "2020-09-10T17:24:18.697297000-00:00"}]
 ```
 
-`facts` will return changes to an identity "attributes":
+`facts` function will return all the changes to an identity over time:
 
 ```clojure
 => (v/facts verter :universe/one)
@@ -165,6 +165,8 @@ as well as "business time" changes:
   :verter/id :universe/two,
   :at #inst "2020-09-09T00:00:00.000000000-00:00"}]
 ```
+
+i.e. :point_up_2: no facts were really changed, but there was a change in "business time" that we did earlier.
 
 ## facts upto
 
@@ -207,7 +209,7 @@ when looking for facts we can specify a certain time upto which the facts are ne
   :at #inst "2020-09-10T21:02:29.570645000-00:00"}]
 ```
 
-since the other 3 facts were added a bit after "2020-09-11T00:18:04", there is only one fact that "matter" in this case.
+since the other 3 facts were added a bit after "`2020-09-11T00:18:04`", there is only one fact that "matter" in this case.
 
 ## identity now
 
@@ -280,7 +282,7 @@ now `:universe/sixty-six` looks like this:
   :at #inst "2020-09-11T00:18:03.000000000-00:00"}]
 ```
 
-see that last fact about the moons, but with the earlier business time?
+see that last fact about the moons, but with the earlier business time `18:03` vs. `18:04`?
 
 let's look at this identity (`:universe/sixty-six`) upto this business time:
 
@@ -367,7 +369,7 @@ we'll create a few new universes to avoid "do nothing" tricks verter does on has
 => (def u42 (mapcat #(vector {:verter/id :universe/forty-two :moons % :suns %}) (range 5500)))
 ```
 
-and add them sequentially in a single thread, not even "pmap":
+and add them sequentially in a single thread, not even with "pmap":
 
 ```clojure
 => (time (do (v/add-facts verter u40)
@@ -379,7 +381,7 @@ and add them sequentially in a single thread, not even "pmap":
 
 `3 * 5500` = `16,500` a second.<br/>
 
-later we'll play with type hints as well, smaller batch sizes would also help..</br>
+later we'll play with type hints, threads, smaller batch sizes would also help..</br>
 but the most time will always be in I/O, so this is close.
 
 ## reads
