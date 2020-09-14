@@ -24,12 +24,21 @@
                      :obliterate-identity]
                     {:path (str "verter/store/" store)}))
 
+(defn validate-fact
+  ;; will have more and most like will use metosin/malli
+  [{:keys [verter/id] :as fact}]
+  (when-not (vt/value? id)
+    (throw (ex-info (str "a fact should have a \":verter/id\" key with a non empty value "
+                         "in order to uniquely \"identify the identity\" this fact belongs to")
+                    {:fact fact}))))
+
 (defn to-row [tx-time fact]
-  (let [[{:keys [id] :as fact} at] (cond (map? fact) [fact tx-time]
-                                         (sequential? fact) fact
-                                         :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
-                                                               {:fact fact})))
-        fval (dissoc fact :id)
+  (let [[{:keys [verter/id] :as fact} at] (cond (map? fact) [fact tx-time]
+                                                (sequential? fact) fact
+                                                :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
+                                                                      {:fact fact})))
+        _ (validate-fact fact)
+        fval (dissoc fact :verter/id)
         to-hash (if (= at tx-time)
                   fval              ;; if no business time provided, hash only the fact value
                   [fval (str at)])] ;; if business time provided, include it in a hash to make sure to record if it changed
@@ -41,7 +50,7 @@
 (defn from-row [{:keys [key value at]}]
   (-> value
       nippy/thaw
-      (assoc :id (edn/read-string key)
+      (assoc :verter/id (edn/read-string key)
              :at at)))
 
 (defn- merge-asc [facts]

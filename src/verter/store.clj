@@ -15,6 +15,7 @@
                        " take a look at https://github.com/tolitius/verter#add-data-store")
                   {:dbtype dbtype})))
 
+;; handrolled mutimethod: easier to navigate, follow and reason about
 (defn connect [dbtype datasource]
   (case dbtype
     :postgres (vp/connect datasource)

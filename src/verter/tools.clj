@@ -17,3 +17,8 @@
          (when-not (nil? v)
            [k v]))
        (into {})))
+
+(defn value? [v]
+  (or (number? v)
+      (keyword? v)
+      (seq v)))

@@ -73,9 +73,9 @@ in case this is the first time verter is used with this database, the institute 
 # adding facts
 
 ```clojure
-=> (v/add-facts verter [{:id :universe/one :suns 12 :planets #{:one :two :three}}
-                        [{:id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
-                        {:id :universe/sixty-six :answer 42}])
+=> (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
 
 [{:tx-id 10,
   :at #inst "2020-09-10T17:24:18.697297000-00:00",
@@ -86,7 +86,7 @@ in case this is the first time verter is used with this database, the institute 
 
 there are a few things to mention here:
 
-* every identity needs to have an `:id`
+* every identity needs to have an `:verter/id`
 * facts about `:universe/two` were given a "business time"
 * other facts will assume that their business time is the transaction time
 * all these facts were recorded in a single transaction
@@ -98,15 +98,15 @@ there are a few things to mention here:
 let's try this again:
 
 ```clojure
-=> (v/add-facts verter [{:id :universe/one :suns 12 :planets #{:one :two :three}}
-                        [{:id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
-                        {:id :universe/sixty-six :answer 42}])
+=> (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
 
 no changes to identities were detected, and hence, these facts
 
-[{:id :universe/one, :suns 12, :planets #{:one :three :two}}
- [{:id :universe/two, :suns 3, :life? true} #inst "2019-09-09T00:00:00.000-00:00"]
- {:id :universe/sixty-six, :answer 42}]
+[{:verter/id :universe/one, :suns 12, :planets #{:one :three :two}}
+ [{:verter/id :universe/two, :suns 3, :life? true} #inst "2019-09-09T00:00:00.000-00:00"]
+ {:verter/id :universe/sixty-six, :answer 42}]
 
 were NOT added at 2020-09-10T17:30:02.975160Z
 ```
@@ -116,9 +116,9 @@ since we already know all these facts.
 but.., let's update `:universe/two` business time and number of suns in `universe/one`:
 
 ```clojure
-=> (v/add-facts verter [{:id :universe/one :suns 42 :planets #{:one :two :three}}
-                        [{:id :universe/two :suns 3 :life? true} #inst "2042-09-09"]
-                        {:id :universe/sixty-six :answer 42}])
+=> (v/add-facts verter [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2042-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
 
 [{:tx-id 11,
   :at #inst "2020-09-10T17:33:13.712498000-00:00",
@@ -133,7 +133,7 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
 ```clojure
 => (v/facts verter :universe/sixty-six)
 
-[{:answer 42, :id :universe/sixty-six, :at #inst "2020-09-10T17:24:18.697297000-00:00"}]
+[{:answer 42, :verter/id :universe/sixty-six, :at #inst "2020-09-10T17:24:18.697297000-00:00"}]
 ```
 
 `facts` will return changes to an identity "attributes":
@@ -143,11 +143,11 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
 
 [{:suns 12,
   :planets #{:one :three :two},
-  :id :universe/one,
+  :verter/id :universe/one,
   :at #inst "2020-09-10T17:24:18.697297000-00:00"}
  {:suns 42,
   :planets #{:one :three :two},
-  :id :universe/one,
+  :verter/id :universe/one,
   :at #inst "2020-09-10T17:33:13.712498000-00:00"}]
 ```
 
@@ -158,11 +158,11 @@ as well as "business time" changes:
 
 [{:suns 3,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2019-09-09T00:00:00.000000000-00:00"}
  {:suns 3,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2042-09-09T00:00:00.000000000-00:00"}]
 ```
 
@@ -171,9 +171,9 @@ as well as "business time" changes:
 let's add some more facts about the `:universe/sixty-six`:
 
 ```clojure
-=> (v/add-facts verter [{:id :universe/sixty-six :suns 42 :planets #{:and-all :earth}, :life? true}
-                        {:id :universe/sixty-six :moons 42}
-                        {:id :universe/sixty-six :moons nil}]
+=> (v/add-facts verter [{:verter/id :universe/sixty-six :suns 42 :planets #{:and-all :earth}, :life? true}
+                        {:verter/id :universe/sixty-six :moons 42}
+                        {:verter/id :universe/sixty-six :moons nil}]
 ```
 
 so now it looks like this:
@@ -182,18 +182,18 @@ so now it looks like this:
 => (v/facts verter :universe/sixty-six)
 
 [{:answer 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-10T21:02:29.570645000-00:00"}
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons nil,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}]
 ```
 
@@ -203,7 +203,7 @@ when looking for facts we can specify a certain time upto which the facts are ne
 => (v/facts verter :universe/sixty-six #inst "2020-09-11T00:18:04")
 
 [{:answer 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-10T21:02:29.570645000-00:00"}]
 ```
 
@@ -215,18 +215,18 @@ continuing with `:universe/sixty-six` with currently 4 facts:
 
 ```clojure
 [{:answer 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-10T21:02:29.570645000-00:00"}
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons nil,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}]
 ```
 
@@ -238,7 +238,7 @@ this can be done with `v/rollup`:
 => (v/rollup verter :universe/sixty-six)
 
 {:answer 42,
- :id :universe/sixty-six,
+ :verter/id :universe/sixty-six,
  :at #inst "2020-09-11T00:18:04.151310000-00:00",
  :suns 42,
  :planets #{:and-all :earth},
@@ -255,28 +255,28 @@ similarly to "identity rollup", we can look at identity at a given point in time
 let's add a fact about the moons right before that transaction with 3 facts above:
 
 ```clojure
-=> (v/add-facts verter [[{:id :universe/sixty-six :moons 13} #inst "2020-09-11T00:18:03"]])
+=> (v/add-facts verter [[{:verter/id :universe/sixty-six :moons 13} #inst "2020-09-11T00:18:03"]])
 ```
 
 now `:universe/sixty-six` looks like this:
 
 ```clojure
 [{:answer 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-10T21:02:29.570645000-00:00"}
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons 42,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons nil,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:04.151310000-00:00"}
  {:moons 13,
-  :id :universe/sixty-six,
+  :verter/id :universe/sixty-six,
   :at #inst "2020-09-11T00:18:03.000000000-00:00"}]
 ```
 
@@ -288,7 +288,7 @@ let's look at this identity (`:universe/sixty-six`) upto this business time:
 => (v/as-of verter :universe/sixty-six #inst "2020-09-11T00:18:03")
 
 {:answer 42,
- :id :universe/sixty-six,
+ :verter/id :universe/sixty-six,
  :at #inst "2020-09-11T00:18:03.000000000-00:00",
  :moons 13}
 ```
@@ -360,9 +360,9 @@ these are the numbers on top of Postgres:
 we'll create a few new universes to avoid "do nothing" tricks verter does on hash matches:
 
 ```clojure
-=> (def u40 (mapcat #(vector {:id :universe/forty     :moons % :suns %}) (range 5500)))
-=> (def u41 (mapcat #(vector {:id :universe/forty-one :moons % :suns %}) (range 5500)))
-=> (def u42 (mapcat #(vector {:id :universe/forty-two :moons % :suns %}) (range 5500)))
+=> (def u40 (mapcat #(vector {:verter/id :universe/forty     :moons % :suns %}) (range 5500)))
+=> (def u41 (mapcat #(vector {:verter/id :universe/forty-one :moons % :suns %}) (range 5500)))
+=> (def u42 (mapcat #(vector {:verter/id :universe/forty-two :moons % :suns %}) (range 5500)))
 ```
 
 and add them sequentially in a single thread, not even "pmap":
@@ -389,20 +389,20 @@ let's read facts for `:universe/two` that has for entries and looks like this:
 [{:suns 42,
   :moons nil,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2020-09-10T22:33:20.204008000-00:00"}
  {:suns 42,
   :moons 12,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2020-09-10T22:10:36.352157000-00:00"}
  {:suns 42,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2020-09-10T22:10:22.712308000-00:00"}
  {:suns 3,
   :life? true,
-  :id :universe/two,
+  :verter/id :universe/two,
   :at #inst "2019-09-09T00:00:00.000000000-00:00"}]
 ```
 

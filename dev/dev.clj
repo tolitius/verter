@@ -34,9 +34,9 @@
 
 ; (def verter (vs/connect :postgres db))
 
-; (v/add-facts verter [{:id :universe/one :suns 12 :planets #{:one :two :three}}
-;                      [{:id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
-;                      {:id :universe/sixty-six :answer 42}])
+; (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+;                      [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+;                      {:verter/id :universe/sixty-six :answer 42}])
 
 ; (v/facts verter :universe/two)
 
