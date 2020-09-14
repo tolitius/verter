@@ -302,7 +302,7 @@ as of "`2020-09-11T00:18:03`" this universe had 13 moons and the answer was and 
 supported data stores:
 | data store | supported  | in progress  |
 |---|:-:|:-:|
-| PostreSQL  | :white_check_mark: |   |
+| PostgreSQL  | :white_check_mark: |   |
 | MySQL  |  |   |
 | Redis  |  |   |
 | Cassandra  |  |   |
