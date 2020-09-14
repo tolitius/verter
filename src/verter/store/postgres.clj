@@ -9,10 +9,10 @@
             [verter.tools :as vt]
             [inquery.core :as q]))
 
-(defn- make-insert-batch-query [facts tx-time]
+(defn- make-insert-batch-query [schema facts tx-time]
   (let [rows (mapv (partial v/to-row tx-time)
                    facts)
-        [qhead & data] (qb/for-insert-multi :facts
+        [qhead & data] (qb/for-insert-multi (str schema ".facts")
                                             [:key :value :hash :at]
                                             rows
                                             {})
@@ -41,8 +41,8 @@
                   :at at
                   :facts kvs})))))
 
-(defn- record-facts [ds facts tx-time]
-  (let [sql (make-insert-batch-query facts tx-time)
+(defn- record-facts [{:keys [ds schema]} facts tx-time]
+  (let [sql (make-insert-batch-query schema facts tx-time)
         recorded (jdbc/execute! ds sql
                                 {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})]
     (or (seq recorded)
@@ -69,27 +69,29 @@
   (facts [this id ts]                                     ;; find facts up until a given time
      (find-facts this id ts))
 
-  (add-facts [{:keys [ds schema queries] :as db} facts]   ;; add one or more facts
+  (add-facts [{:keys [ds] :as db} facts]   ;; add one or more facts
     (when (seq facts)
       (let [tx-time (vt/now)]
         (jdbc/with-transaction [tx ds]
-          (some->> (record-facts ds facts tx-time)
+          (some->> (record-facts db facts tx-time)
                    (record-transaction db tx-time))))))
 
   (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
 
 (defn connect
   ([ds]
-   (connect ds "public"))
-  ([ds schema]
+   (connect ds {}))
+  ([ds {:keys [schema]
+        :or {schema "public"}}]
    (->Postgres ds
                schema
                (v/load-queries "postgres"))))
 
 (defn create-institute-of-time
   ([ds]
-   (create-institute-of-time ds "public"))
-  ([ds schema]
+   (create-institute-of-time ds {}))
+  ([ds {:keys [schema]
+        :or {schema "public"}}]
    (let [sql (-> (v/load-queries "postgres")
                  :create-institute-of-time
                  (q/with-params {:schema {:as schema}}))]

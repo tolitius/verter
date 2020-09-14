@@ -18,6 +18,13 @@
            [k v]))
        (into {})))
 
+(defn fmk
+  "apply f to each key k of map m"
+  [m f]
+  (into {}
+        (for [[k v] m]
+          [(f k) v])))
+
 (defn value? [v]
   (or (number? v)
       (keyword? v)

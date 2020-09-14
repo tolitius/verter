@@ -67,7 +67,7 @@ until now there is nothing verter specific, we just creating a datasource. check
 in case this is the first time verter is used with this database, the institute of time (verter tables) need to be created:
 
 ```clojure
-=> (vp/create-institute-of-time db)
+=> (vs/create-institute-of-time :postgres db)
 ```
 
 # adding facts
@@ -117,7 +117,7 @@ but.., let's update `:universe/two` business time and number of suns in `univers
 
 ```clojure
 => (v/add-facts verter [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}
-                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2042-09-09"]
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2020-09-09"]
                         {:verter/id :universe/sixty-six :answer 42}])
 
 [{:tx-id 11,
@@ -163,7 +163,7 @@ as well as "business time" changes:
  {:suns 3,
   :life? true,
   :verter/id :universe/two,
-  :at #inst "2042-09-09T00:00:00.000000000-00:00"}]
+  :at #inst "2020-09-09T00:00:00.000000000-00:00"}]
 ```
 
 ## facts upto
@@ -173,7 +173,7 @@ let's add some more facts about the `:universe/sixty-six`:
 ```clojure
 => (v/add-facts verter [{:verter/id :universe/sixty-six :suns 42 :planets #{:and-all :earth}, :life? true}
                         {:verter/id :universe/sixty-six :moons 42}
-                        {:verter/id :universe/sixty-six :moons nil}]
+                        {:verter/id :universe/sixty-six :moons nil}])
 ```
 
 so now it looks like this:
@@ -288,7 +288,9 @@ let's look at this identity (`:universe/sixty-six`) upto this business time:
 => (v/as-of verter :universe/sixty-six #inst "2020-09-11T00:18:03")
 
 {:answer 42,
+ :suns 42,
  :verter/id :universe/sixty-six,
+ :planets #{:and-all :earth}
  :at #inst "2020-09-11T00:18:03.000000000-00:00",
  :moons 13}
 ```
@@ -382,7 +384,7 @@ but the most time will always be in I/O, so this is close.
 
 ## reads
 
-let's read facts for `:universe/two` that has for entries and looks like this:
+let's read facts for `:universe/two` that has four entries and looks like this:
 
 ```clojure
 => (v/facts verter :universe/two)

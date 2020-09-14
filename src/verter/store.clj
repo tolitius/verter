@@ -5,7 +5,7 @@
             ; [verter.store.mssql :as vms]
             ; [verter.store.redis :as vr]
             ; [verter.store.cassandra :as vc]
-            ; [verter.store.couchdb :as vcb]
+            ; [verter.store.couchbase :as vcb]
             ;; ...
             ))
 
@@ -15,8 +15,24 @@
                        " take a look at https://github.com/tolitius/verter#add-data-store")
                   {:dbtype dbtype})))
 
-;; handrolled mutimethod: easier to navigate, follow and reason about
-(defn connect [dbtype datasource]
-  (case dbtype
-    :postgres (vp/connect datasource)
-    (not-yet dbtype)))
+;; handrolled mutimethods: easier to navigate, follow and reason about
+;; iff more sophistication arrives, use a Store connect/create-institute-of-time protocol
+
+(defn connect
+  ([dbtype datasource]
+   (connect dbtype datasource {}))
+  ([dbtype datasource opts]
+   (case dbtype
+     :postgres (vp/connect datasource opts)
+     (not-yet dbtype))))
+
+(defn create-institute-of-time
+  ([dbtype datasource]
+   (create-institute-of-time dbtype
+                             datasource
+                             {}))
+  ([dbtype datasource opts]
+   (case dbtype
+     :postgres (vp/create-institute-of-time datasource
+                                            opts)
+     (not-yet dbtype))))
