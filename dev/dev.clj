@@ -7,6 +7,7 @@
            [verter.core :as v]
            [verter.store :as vs]
            [verter.store.postgres :as vp]
+           [calip.core :as calip]
            [clojure.repl :as repl]
            [clojure.pprint :as pp]))
 
@@ -24,6 +25,20 @@
     (jdbc/execute! conn [sql]
                    {:return-keys true
                     :builder-fn rs/as-unqualified-lower-maps})))
+
+(defn measure-it []
+  (calip/measure #{#'verter.store.postgres/make-insert-batch-query
+                   #'verter.store.postgres/record-transaction
+                   #'verter.store.postgres/record-facts
+                   #'next.jdbc/execute!}
+                 {:report (fn [{:keys [took fname]}]
+                            (println (format "%s took %,d ns" fname took)))}))
+
+(defn unmeasure-it []
+  (calip/uncalip #{#'verter.store.postgres/make-insert-batch-query
+                   #'verter.store.postgres/record-transaction
+                   #'verter.store.postgres/record-facts
+                   #'next.jdbc/execute!}))
 
 ; $ clojure -A:dev -A:repl
 
