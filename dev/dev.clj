@@ -9,13 +9,18 @@
            [verter.store.postgres :as vp]
            [calip.core :as calip]
            [clojure.repl :as repl]
-           [clojure.pprint :as pp]))
+           [clojure.pprint :as pp :refer [pprint]]))
 
-(defn start-db []
-  (println "[verter] connecting to the database..")
-  (let [{:keys [datasource]} (-> (c/load-config)
-                                 :verter)]
-    (hk/make-datasource datasource)))
+(defn start-db
+  ([]
+   (start-db :postgres))
+  ([dbtype]
+   (println "[verter] connecting to the" dbtype "database..")
+   (let [{:keys [datasource]} (-> (c/load-config)
+                                  :verter
+                                  :store
+                                  dbtype)]
+     (hk/make-datasource datasource))))
 
 (defn stop-db [datasource]
  (hk/close-datasource datasource))

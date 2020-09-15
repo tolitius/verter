@@ -304,14 +304,15 @@ as of "`2020-09-11T00:18:03`" this universe had 13 moons and the answer was and 
 supported data stores:
 | data store | supported  | in progress  |
 |---|:-:|:-:|
-| PostgreSQL  | :white_check_mark: |   |
-| MySQL  |  |   |
-| Redis  |  |   |
-| Cassandra  |  |   |
-| Couchbase  |  |   |
-| MsSQL  |  |   |
-| Oracle  |  |   |
-| Your store  |  |   |
+| PostgreSQL  | :white_check_mark: |                      |
+| SQLite      |                    |  :white_check_mark:  |
+| MySQL       |  |  |
+| Redis       |  |  |
+| Cassandra   |  |  |
+| Couchbase   |  |  |
+| MsSQL       |  |  |
+| Oracle      |  |  |
+| Your store  |  |  |
 
 :heart: consider contributing to add a support for a data store that is used by your applications.
 
@@ -352,6 +353,59 @@ take a look at the [postgres schema](https://github.com/tolitius/verter/blob/ffb
 ----
 
 if you are interested and/or need more details, just open an [issue](https://github.com/tolitius/verter/issues), and let's talk
+
+## SQLlite
+
+here is an example of using verter on to of the [SQLite database](https://sqlite.org/index.html):
+
+```clojure
+;; this is from verter/dev.clj, but you could of course create a datasource on your own
+;; i.e. (hk/make-datasource {:jdbc-url "jdbc:sqlite:db/database.db"})
+
+=> (def db (start-db :sqlite))
+```
+
+```clojure
+=> (def verter (vs/connect :sqlite db))
+=> (vs/create-institute-of-time :sqlite db)
+
+=> (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
+
+=> (v/add-facts verter [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2020-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
+```
+
+```clojure
+=> (pprint (v/facts verter :universe/one))
+[{:suns 12,
+  :planets #{:one :three :two},
+  :verter/id :universe/one,
+  :at #inst "2020-09-15T18:33:23.736-00:00"}
+ {:suns 42,
+  :planets #{:one :three :two},
+  :verter/id :universe/one,
+  :at #inst "2020-09-15T18:33:42.035-00:00"}]
+```
+
+and here is what's brewing inside the database:
+
+```bash
+$ sqlite3 dev/verter.db
+
+sqlite> select * from facts;
+1|:universe/one|NPY|8cc82db19a67cc61e8e4144a854c15fd|1600194803736
+2|:universe/two|NPY|0804a4e066f308756dcab8aa1dd35ae4|1567987200000
+3|:universe/sixty-six|NPY|b9bb678c38b5a29917a4a7baafdbf754|1600194803736
+4|:universe/one|NPY|8657a740c448d4fc46af054f94ed5cec|1600194822035
+5|:universe/two|NPY|6ef240c23aee0ecef51d710c09675022|1599609600000
+
+sqlite> select * from transactions;
+1|1600194803736|NPY
+2|1600194822035|NPY
+```
 
 # useless benchmarks
 

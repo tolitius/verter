@@ -1,5 +1,6 @@
 (ns verter.tools
-  (:require [æsahættr :as hasher]))
+  (:require [æsahættr :as hasher]
+            [clojure.string :as s]))
 
 (defn hash-it [obj]
   (let [murmur (hasher/murmur3-128)
@@ -11,6 +12,10 @@
 
 (defn now []
   (java.time.Instant/now))
+
+(defn ts->date [ts]
+  (when (number? ts)
+    (java.util.Date. ts)))
 
 (defn remove-nil-vals [m]
   (->> (for [[k v] m]
@@ -29,3 +34,6 @@
   (or (number? v)
       (keyword? v)
       (seq v)))
+
+(defn to-multi-queries [q]
+  (s/split q #"--;;"))
