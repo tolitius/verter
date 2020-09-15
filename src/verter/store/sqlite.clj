@@ -23,28 +23,34 @@
   (reduce (fn [a {:keys [hash key]}]
             (-> a
                 (update :hashes conj hash)
-                (update :kvs conj {:key (edn/read-string key)
+                (update :kvs conj {:key key
                                    :hash hash})))
     {:hashes [] :kvs []}
     facts))
 
+(defn- last-inserted [rs]
+  ;; [{:last_insert_rowid() 42}]
+  (-> rs first vals first))
+
 (defn- record-transaction [{:keys [ds queries]}
                            tx-time inserted]
-  (let [{:keys [kvs hashes]} (inserted-hashes inserted)
+  (let [{:keys [kvs hashes]} (->> inserted
+                                  (map (partial v/to-khash tx-time))
+                                  inserted-hashes)
         sql (-> (queries :record-transaction))]
     (->> (jdbc/execute! ds [sql tx-time (nippy/freeze hashes)]
-                            {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
-         (mapv (fn [{:keys [id at]}]
-                 {:tx-id id
-                  :at at
-                  :facts kvs})))))
+                        {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+         last-inserted
+         (assoc {:at (vt/inst->date tx-time)
+                 :facts kvs} :tx-id))))
 
 (defn- record-facts [{:keys [ds]} facts tx-time]
   (let [sql (make-insert-batch-query facts tx-time)
-        recorded (jdbc/execute! ds sql
-                                {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})]
-    (or (seq recorded)
-        (println "no changes to identities were detected, and hence, these facts" facts "were NOT added at" (str tx-time)))))
+        recorded (jdbc/execute! ds sql)]
+    (if (= (-> recorded first :next.jdbc/update-count) 0)
+      ;;TODO: think how to deal with partial inserts on a batch insert with SQLite since it only returns last inserted row id
+      (println "no changes to identities were detected, and hence, these facts" facts "were NOT added at" (str tx-time))
+      facts)))
 
 (defn- find-facts
   "find all the facts about identity upto a certain time"

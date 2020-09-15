@@ -17,6 +17,9 @@
   (when (number? ts)
     (java.util.Date. ts)))
 
+(defn inst->date [in]
+  (java.util.Date/from in))
+
 (defn remove-nil-vals [m]
   (->> (for [[k v] m]
          (when-not (nil? v)

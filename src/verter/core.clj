@@ -32,11 +32,24 @@
                          "in order to uniquely \"identify the identity\" this fact belongs to")
                     {:fact fact}))))
 
+(defn- normalize-fact [tx-time fact]
+  (cond (map? fact) [fact tx-time]
+        (sequential? fact) fact
+        :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
+                              {:fact fact}))))
+
+(defn to-khash
+  "this slightly repetitive helper is only for data stores that do not return what was upserted"
+  [tx-time fact]
+  (let [[{:keys [verter/id] :as fact} at] (normalize-fact tx-time fact)
+        fval (dissoc fact :verter/id)
+        to-hash (if (= at tx-time)
+                  fval              ;; if no business time provided, hash only the fact value
+                  [fval (str at)])] ;; if business time provided, include it in a hash to make sure to record if it changed
+    {:key id :hash (vt/hash-it to-hash)}))
+
 (defn to-row [tx-time fact]
-  (let [[{:keys [verter/id] :as fact} at] (cond (map? fact) [fact tx-time]
-                                                (sequential? fact) fact
-                                                :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
-                                                                      {:fact fact})))
+  (let [[{:keys [verter/id] :as fact} at] (normalize-fact tx-time fact)
         _ (validate-fact fact)
         fval (dissoc fact :verter/id)
         to-hash (if (= at tx-time)
