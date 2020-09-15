@@ -6,7 +6,7 @@
 his most famous adventure takes place in the year of 2084..
 
 [![<! release](https://img.shields.io/badge/dynamic/json.svg?label=release&url=https%3A%2F%2Fclojars.org%2Ftolitius%2Fverter%2Flatest-version.json&query=version&colorB=blue)](https://github.com/tolitius/verter/releases)
-[![<! clojars](https://img.shields.io/clojars/v/tolitius/verter.svg)](https://clojars.org/tolitius/verter)>
+[![<! clojars](https://img.shields.io/clojars/v/tolitius/verter.svg)](https://clojars.org/tolitius/verter)
 
 - [what and why](#what-and-why)
 - [how to play](#how-to-play)
@@ -62,6 +62,11 @@ until now there is nothing verter specific, we just creating a datasource. check
 
 => (def verter (vs/connect :postgres db))
 ```
+
+regardless of which data store verter is connected to API should behave the same way<br/>
+you can [connect with SQLite](#sqlite), if it is easier, then come back and follow the API examples
+
+> _SQLite support is almost done, but still in progress, so there might be some differences_
 
 ### create institute of time
 
@@ -357,7 +362,7 @@ if you are interested and/or need more details, just open an [issue](https://git
 
 ## SQLite
 
-here is an example of using verter on to of the [SQLite database](https://sqlite.org/index.html):
+here is an example of using verter with a [SQLite database](https://sqlite.org/index.html):
 
 ```clojure
 ;; this is from verter/dev.clj, but you could of course create a datasource on your own
@@ -393,7 +398,7 @@ here is an example of using verter on to of the [SQLite database](https://sqlite
 
 and here is what's brewing inside the database:
 
-```bash
+```
 $ sqlite3 dev/verter.db
 
 sqlite> select * from facts;
