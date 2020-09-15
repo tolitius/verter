@@ -6,13 +6,13 @@
 his most famous adventure takes place in the year of 2084..
 
 [![<! release](https://img.shields.io/badge/dynamic/json.svg?label=release&url=https%3A%2F%2Fclojars.org%2Ftolitius%2Fverter%2Flatest-version.json&query=version&colorB=blue)](https://github.com/tolitius/verter/releases)
-[![<! clojars](https://img.shields.io/clojars/v/tolitius/verter.svg)](https://clojars.org/tolitius/verter)
+[![<! clojars](https://img.shields.io/clojars/v/tolitius/verter.svg)](https://clojars.org/tolitius/verter)>
 
 - [what and why](#what-and-why)
 - [how to play](#how-to-play)
-  - [create a datasource](#create-a-datasource)
-  - [allow verter in](#allow-verter-in)
-  - [create institute of time](#create-institute-of-time)
+    - [create a datasource](#create-a-datasource)
+    - [allow verter in](#allow-verter-in)
+    - [create institute of time](#create-institute-of-time)
 - [adding facts](#adding-facts)
   - [don't record what is already known](#dont-record-what-is-already-known)
 - [looking at facts](#looking-at-facts)
@@ -20,9 +20,10 @@ his most famous adventure takes place in the year of 2084..
   - [identity now](#identity-now)
   - [identity "as of"](#identity-as-of)
 - [add data store](#add-data-store)
-  - [implement `Identity` protocol](#implement-identity-protocol)
-  - [add a `connect` function](#add-a-connect-function)
-  - [create schema](#create-schema)
+    - [implement `Identity` protocol](#implement-identity-protocol)
+    - [add a `connect` function](#add-a-connect-function)
+    - [create schema](#create-schema)
+  - [SQLite](#sqlite)
 - [useless benchmarks](#useless-benchmarks)
   - [writes](#writes)
   - [reads](#reads)
@@ -354,7 +355,7 @@ take a look at the [postgres schema](https://github.com/tolitius/verter/blob/ffb
 
 if you are interested and/or need more details, just open an [issue](https://github.com/tolitius/verter/issues), and let's talk
 
-## SQLlite
+## SQLite
 
 here is an example of using verter on to of the [SQLite database](https://sqlite.org/index.html):
 
