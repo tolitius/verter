@@ -1,13 +1,22 @@
 (ns verter.tools
-  (:require [æsahættr :as hasher]
-            [clojure.string :as s]))
+  (:require [cljhash.core :as hasher]
+            [clojure.string :as s]
+            [taoensso.nippy :as nippy])
+  (:import [com.google.common.hash Hashing
+                                   Funnel
+                                   PrimitiveSink]))
+
+(def nippy-funnel
+  (reify Funnel
+    (^void funnel [_ obj ^PrimitiveSink sink]
+      (.putBytes sink (nippy/freeze obj)))))
 
 (defn hash-it [obj]
-  (let [murmur (hasher/murmur3-128)
+  (let [murmur (Hashing/murmur3_128)
         h (try
-            (hasher/hash-object murmur obj)
+            (hasher/clj-hash murmur obj)
             (catch Exception e
-              (hasher/hash-object murmur hasher/nippy-funnel obj)))]
+              (hasher/hash-obj! murmur nippy-funnel obj)))]
     (str h)))
 
 (defn now []
