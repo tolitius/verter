@@ -409,8 +409,8 @@ sqlite> select * from facts;
 5|:universe/two|NPY|6ef240c23aee0ecef51d710c09675022|1599609600000
 
 sqlite> select * from transactions;
-1|1600194803736|NPY
-2|1600194822035|NPY
+1|1600194803736|NPY.ri 20bd8..
+2|1600194822035|NPY.ri c29c5..
 ```
 
 # useless benchmarks
