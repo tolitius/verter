@@ -16,7 +16,7 @@
         h (try
             (hasher/clj-hash murmur obj)
             (catch Exception e
-              (hasher/hash-obj! murmur nippy-funnel obj)))]
+              (hasher/hash-obj murmur nippy-funnel obj)))]
     (str h)))
 
 (defn now []

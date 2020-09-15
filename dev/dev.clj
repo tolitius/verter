@@ -7,6 +7,7 @@
            [verter.core :as v]
            [verter.store :as vs]
            [verter.store.postgres :as vp]
+           [verter.tools :as vt]
            [calip.core :as calip]
            [clojure.repl :as repl]
            [clojure.pprint :as pp :refer [pprint]]))
