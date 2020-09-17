@@ -34,10 +34,11 @@
 
 ;; performance corner
 
-(def to-measure #{#'verter.store.postgres/make-insert-batch-query
-                   #'verter.store.postgres/record-transaction
-                   #'verter.store.postgres/record-facts
-                   #'next.jdbc/execute!})
+(def to-measure #{#'verter.store.postgres/make-insert-facts-batch-query
+                  #'verter.store.postgres/make-insert-txs-batch-query
+                  #'verter.store.postgres/record-transaction
+                  #'verter.store.postgres/record-facts
+                  #'next.jdbc/execute!})
 
 (defn measure-it []
   (calip/measure to-measure
