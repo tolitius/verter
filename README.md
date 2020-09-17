@@ -16,6 +16,7 @@ his most famous adventure takes place in the year of 2084..
 - [adding facts](#adding-facts)
   - [don't record what is already known](#dont-record-what-is-already-known)
 - [looking at facts](#looking-at-facts)
+  - [with transaction intel](#with-transaction-intel)
   - [facts upto](#facts-upto)
   - [identity now](#identity-now)
   - [identity "as of"](#identity-as-of)
@@ -83,11 +84,7 @@ in case this is the first time verter is used with this database, the institute 
                         [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
                         {:verter/id :universe/sixty-six :answer 42}])
 
-[{:tx-id 10,
-  :at #inst "2020-09-10T17:24:18.697297000-00:00",
-  :facts [{:key :universe/one, :hash "8cc82db19a67cc61e8e4144a854c15fd"}
-          {:key :universe/two, :hash "0804a4e066f308756dcab8aa1dd35ae4"}
-          {:key :universe/sixty-six, :hash "b9bb678c38b5a29917a4a7baafdbf754"}]}]
+{:tx-id #uuid "5f62d4c0-c5ca-4431-ac33-610825f9ef36"}
 ```
 
 there are a few things to mention here:
@@ -96,53 +93,60 @@ there are a few things to mention here:
 * facts about `:universe/two` were given a "business time"
 * other facts will assume that their business time is the transaction time
 * all these facts were recorded in a single transaction
-* this transaction id ("`tx-id`") is `10`
-* identities with facts that _were_ recorded came back in keys and content hashes.
+* this transaction id ("`tx-id`") is `5f62d4c0-c5ca-4431-ac33-610825f9ef36`
 
 ## don't record what is already known
 
 let's try this again:
 
 ```clojure
-=> (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
-                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
-                        {:verter/id :universe/sixty-six :answer 42}])
+=> (v/add-facts verter [[{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]])
 
-no changes to identities were detected, and hence, these facts
-
-[{:verter/id :universe/one, :suns 12, :planets #{:one :three :two}}
- [{:verter/id :universe/two, :suns 3, :life? true} #inst "2019-09-09T00:00:00.000-00:00"]
- {:verter/id :universe/sixty-six, :answer 42}]
-
-were NOT added at 2020-09-10T17:30:02.975160Z
+{:noop "no changes to identities were detected, and hence, these facts
+        [[{:verter/id :universe/two, :suns 3, :life? true} #inst \"2019-09-09T00:00:00.000-00:00\"]]
+        were NOT added at 2020-09-17T03:16:58.774118Z"}
 ```
 
-since we already know all these facts.
+since we already know this fact about `:universe/two` at this business time.
 
-but.., let's update `:universe/two` business time and number of suns in `universe/one`:
+but.., let's update `:universe/two` business time:
 
 ```clojure
-=> (v/add-facts verter [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}
-                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2020-09-09"]
-                        {:verter/id :universe/sixty-six :answer 42}])
+=> (v/add-facts verter [[{:verter/id :universe/two :suns 3 :life? true} #inst "2020-09-09"]])
 
-[{:tx-id 11,
-  :at #inst "2020-09-10T17:33:13.712498000-00:00",
-  :facts [{:key :universe/one, :hash "8657a740c448d4fc46af054f94ed5cec"}
-          {:key :universe/two, :hash "999e5216c37fe39510bbb8116b2dc1ca"}]}]
+{:tx-id #uuid "5f62d5af-c4e1-475d-b086-3dad13015623"}
 ```
 
-as you see no facts about `:universe/sixty-six` were recorded since they did not change.
+same "recorded" result would be without a business time, since transaction time will be used instead (which changes.. one planck at a time):
+
+```clojure
+=> (v/add-facts verter [[{:verter/id :universe/two :suns 3 :life? true}]])
+{:tx-id #uuid "5f62d6b3-df46-4d76-9b71-d8bc3619d791"}
+```
+
+you might have noticed that transaction ids are sequential UUIDs. good catch!
 
 # looking at facts
 
 ```clojure
 => (v/facts verter :universe/sixty-six)
 
-[{:answer 42, :verter/id :universe/sixty-six, :at #inst "2020-09-10T17:24:18.697297000-00:00"}]
+[{:answer 42,
+  :verter/id :universe/sixty-six,
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}]
 ```
 
 `facts` function will return all the changes to an identity over time:
+
+let's add more suns to `:universe/one`:
+
+```clojure
+=> (v/add-facts verter [[{:verter/id :universe/one :suns 42}]])
+
+{:tx-id #uuid "5f62d75d-af6e-4a1d-8687-fc1ee690d1f4"}
+```
+
+and look at how universe was doing its magic by adding more suns over time:
 
 ```clojure
 => (v/facts verter :universe/one)
@@ -150,14 +154,13 @@ as you see no facts about `:universe/sixty-six` were recorded since they did not
 [{:suns 12,
   :planets #{:one :three :two},
   :verter/id :universe/one,
-  :at #inst "2020-09-10T17:24:18.697297000-00:00"}
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}
  {:suns 42,
-  :planets #{:one :three :two},
   :verter/id :universe/one,
-  :at #inst "2020-09-10T17:33:13.712498000-00:00"}]
+  :at #inst "2020-09-17T03:26:21.253047000-00:00"}]
 ```
 
-as well as "business time" changes:
+"facts" would also show "business time" changes:
 
 ```clojure
 => (v/facts verter :universe/two)
@@ -169,10 +172,43 @@ as well as "business time" changes:
  {:suns 3,
   :life? true,
   :verter/id :universe/two,
-  :at #inst "2020-09-09T00:00:00.000000000-00:00"}]
+  :at #inst "2020-09-09T00:00:00.000000000-00:00"}
+ {:suns 3,
+  :life? true,
+  :verter/id :universe/two,
+  :at #inst "2020-09-17T03:23:31.132664000-00:00"}]
 ```
 
 i.e. :point_up_2: no facts were really changed, but there was a change in "business time" that we did earlier.
+
+ah, yes "`:at`" is "business time". good catch!
+
+### with transaction intel
+
+you may add `{:with-tx? true}` to see the transaction intel across history:
+
+```clojure
+=> (v/facts verter :universe/two {:with-tx? true})
+
+[{:suns 3,
+  :life? true,
+  :verter/id :universe/two,
+  :at #inst "2019-09-09T00:00:00.000000000-00:00",
+  :tx-time #inst "2020-09-17T03:15:12.859748000-00:00",
+  :tx-id #uuid "5f62d4c0-c5ca-4431-ac33-610825f9ef36"}
+ {:suns 3,
+  :life? true,
+  :verter/id :universe/two,
+  :at #inst "2020-09-09T00:00:00.000000000-00:00",
+  :tx-time #inst "2020-09-17T03:19:11.341449000-00:00",
+  :tx-id #uuid "5f62d5af-c4e1-475d-b086-3dad13015623"}
+ {:suns 3,
+  :life? true,
+  :verter/id :universe/two,
+  :at #inst "2020-09-17T03:23:31.132664000-00:00",
+  :tx-time #inst "2020-09-17T03:23:31.132664000-00:00",
+  :tx-id #uuid "5f62d6b3-df46-4d76-9b71-d8bc3619d791"}]
+```
 
 ## facts upto
 
@@ -182,6 +218,8 @@ let's add some more facts about the `:universe/sixty-six`:
 => (v/add-facts verter [{:verter/id :universe/sixty-six :suns 42 :planets #{:and-all :earth}, :life? true}
                         {:verter/id :universe/sixty-six :moons 42}
                         {:verter/id :universe/sixty-six :moons nil}])
+
+{:tx-id #uuid "5f62d86d-b7ac-4821-ad65-70ced2f5e95a"}
 ```
 
 so now it looks like this:
@@ -191,31 +229,33 @@ so now it looks like this:
 
 [{:answer 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-10T21:02:29.570645000-00:00"}
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons nil,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}]
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}]
 ```
 
 when looking for facts we can specify a certain time upto which the facts are needed:
 
 ```clojure
-=> (v/facts verter :universe/sixty-six #inst "2020-09-11T00:18:04")
+=> (v/facts verter
+            :universe/sixty-six
+            {:upto #inst "2020-09-17T03:20:00"})
 
 [{:answer 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-10T21:02:29.570645000-00:00"}]
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}]
 ```
 
-since the other 3 facts were added a bit after "`2020-09-11T00:18:04`", there is only one fact that "matter" in this case.
+since the other 3 facts were added a bit after "`2020-09-17T03:20:00`", there is only one fact that "matter" in this case.
 
 ## identity now
 
@@ -224,18 +264,18 @@ continuing with `:universe/sixty-six` with currently 4 facts:
 ```clojure
 [{:answer 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-10T21:02:29.570645000-00:00"}
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons nil,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}]
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}]
 ```
 
 a quite frequent need is to see the identity "now": i.e. all the facts rolled up over time.
@@ -247,7 +287,7 @@ this can be done with `v/rollup`:
 
 {:answer 42,
  :verter/id :universe/sixty-six,
- :at #inst "2020-09-11T00:18:04.151310000-00:00",
+ :at #inst "2020-09-17T03:30:53.388072000-00:00",
  :suns 42,
  :planets #{:and-all :earth},
  :life? true}
@@ -258,60 +298,62 @@ the last fact about the `moons` is that it is "nil", hence while it still shows 
 
 ## identity "as of"
 
-similarly to "identity rollup", we can look at identity at a given point in time a.k.a. "as of" time:
+similarly to the "identity now" rollup above, we can look at an identity at a given point in time a.k.a. "as of" time:
 
 let's add a fact about the moons right before that transaction with 3 facts above:
 
 ```clojure
-=> (v/add-facts verter [[{:verter/id :universe/sixty-six :moons 13} #inst "2020-09-11T00:18:03"]])
+=> (v/add-facts verter [[{:verter/id :universe/sixty-six :moons 13} #inst "2020-09-17T03:20:00"]])
+
+{:tx-id #uuid "5f62de48-14c9-4acb-99d6-82e721d50443"}
 ```
 
 now `:universe/sixty-six` looks like this:
 
 ```clojure
+=> (v/facts verter :universe/sixty-six)
+
 [{:answer 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-10T21:02:29.570645000-00:00"}
+  :at #inst "2020-09-17T03:15:12.859748000-00:00"}
+ {:moons 13,                                         ;; here is out "new" moon count
+  :verter/id :universe/sixty-six,
+  :at #inst "2020-09-17T03:20:00.000000000-00:00"}   ;; with its own busines time
  {:suns 42,
   :planets #{:and-all :earth},
   :life? true,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons 42,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}
  {:moons nil,
   :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:04.151310000-00:00"}
- {:moons 13,
-  :verter/id :universe/sixty-six,
-  :at #inst "2020-09-11T00:18:03.000000000-00:00"}]
+  :at #inst "2020-09-17T03:30:53.388072000-00:00"}]
 ```
 
-see that last fact about the moons, but with the earlier business time `18:03` vs. `18:04`?
+see that second fact about the number of moons, but with the earlier business time `03:20` vs. `03:30`?
 
 let's look at this identity (`:universe/sixty-six`) upto this business time:
 
 ```clojure
-=> (v/as-of verter :universe/sixty-six #inst "2020-09-11T00:18:03")
+=> (v/as-of verter :universe/sixty-six #inst "2020-09-17T03:20:00")
 
 {:answer 42,
- :suns 42,
  :verter/id :universe/sixty-six,
- :planets #{:and-all :earth}
- :at #inst "2020-09-11T00:18:03.000000000-00:00",
+ :at #inst "2020-09-17T03:20:00.000000000-00:00",
  :moons 13}
 ```
 
-as of "`2020-09-11T00:18:03`" this universe had 13 moons and the answer was and still is.. 42.
+as of "`2020-09-17T03:20:00`" this universe had 13 moons and the answer was and still is.. 42.
 
 # add data store
 
 supported data stores:
 | data store | supported  | in progress  |
 |---|:-:|:-:|
-| PostgreSQL  | :white_check_mark: |                      |
-| SQLite      |                    |  :white_check_mark:  |
+| PostgreSQL  | :white_check_mark: |    |
+| SQLite      | :white_check_mark: |    |
 | MySQL       |  |  |
 | Redis       |  |  |
 | Cassandra   |  |  |
@@ -329,15 +371,15 @@ adding a missing data store comes down to 1, 2, 3
 ```clojure
 (defprotocol Identity
   (facts [this id]
-         [this id ts]
-    "find all the facts about the identity until now or a given time")
+         [this id opts]
+    "find all the facts about the identity until now or with options")
 
   (add-facts [this facts]
     "add one or more facts with or without time specified
      if time is not specified, a single transaction time is used")
 
   (obliterate [this id]
-    "'big brother' move: the idenitity never existed"))
+     "'big brother' move: the idenitity never existed"))
 ```
 
 take a look at [postgres](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/src/verter/store/postgres.clj#L63-L77) implementation to get an idea.
@@ -385,7 +427,8 @@ here is an example of using verter with a [SQLite database](https://sqlite.org/i
 ```
 
 ```clojure
-=> (pprint (v/facts verter :universe/one))
+=> (v/facts verter :universe/one)
+
 [{:suns 12,
   :planets #{:one :three :two},
   :verter/id :universe/one,
@@ -402,15 +445,20 @@ and here is what's brewing inside the database:
 $ sqlite3 dev/verter.db
 
 sqlite> select * from facts;
-1|:universe/one|NPY|8cc82db19a67cc61e8e4144a854c15fd|1600194803736
-2|:universe/two|NPY|0804a4e066f308756dcab8aa1dd35ae4|1567987200000
-3|:universe/sixty-six|NPY|b9bb678c38b5a29917a4a7baafdbf754|1600194803736
-4|:universe/one|NPY|8657a740c448d4fc46af054f94ed5cec|1600194822035
-5|:universe/two|NPY|6ef240c23aee0ecef51d710c09675022|1599609600000
+
+1|:universe/one|NPY|6f19337c3663044aeebe621321fed52a
+2|:universe/two|NPY|82f5ff2d5d5f61d8175b029b37036704
+3|:universe/sixty-six|NPY|fc303f3a3088da2eef9b706ed7de8a06
+4|:universe/one|NPY|1719aa1d06b9405a1c4a970d99d2c4fd
 
 sqlite> select * from transactions;
-1|1600194803736|NPY.ri 20bd8..
-2|1600194822035|NPY.ri c29c5..
+
+5f62e625-4bef-45a0-af73-2f3eefd22f96|6f19337c3663044aeebe621321fed52a|1600316965087|1600316965087
+5f62e625-4bef-45a0-af73-2f3eefd22f96|82f5ff2d5d5f61d8175b029b37036704|1567987200000|1600316965087
+5f62e625-4bef-45a0-af73-2f3eefd22f96|fc303f3a3088da2eef9b706ed7de8a06|1600316965087|1600316965087
+5f62e637-5f71-4c16-8501-931c79fc6e29|1719aa1d06b9405a1c4a970d99d2c4fd|1600316983411|1600316983411
+5f62e637-5f71-4c16-8501-931c79fc6e29|82f5ff2d5d5f61d8175b029b37036704|1599609600000|1600316983411
+5f62e637-5f71-4c16-8501-931c79fc6e29|fc303f3a3088da2eef9b706ed7de8a06|1600316983411|1600316983411
 ```
 
 # useless benchmarks

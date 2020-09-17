@@ -1,2 +1,1 @@
-insert into :schema.transactions (at, facts)
-values (?, ?)
+-- not needed, batch insert is done in code

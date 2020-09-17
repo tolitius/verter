@@ -6,8 +6,8 @@
 
 (defprotocol Identity
   (facts [this id]
-         [this id ts]
-    "find all the facts about the identity until now or a given time")
+         [this id opts]
+    "find all the facts about the identity until now or with options")
 
   (add-facts [this facts]
     "add one or more facts with or without time specified
@@ -32,39 +32,42 @@
                          "in order to uniquely \"identify the identity\" this fact belongs to")
                     {:fact fact}))))
 
-(defn- normalize-fact [tx-time fact]
-  (cond (map? fact) [fact tx-time]
-        (sequential? fact) fact
-        :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
-                              {:fact fact}))))
+(defn- normalize-fact
+  ([fact]
+   (normalize-fact :noop fact))
+  ([tx-time fact]
+   (cond (map? fact) [fact tx-time]
+         (sequential? fact) fact
+         :else (throw (ex-info "a fact can be either a map or a vector with a map and an #inst"
+                               {:fact fact})))))
 
-(defn to-khash
-  "this slightly repetitive helper is only for data stores that do not return what was upserted"
-  [tx-time fact]
-  (let [[{:keys [verter/id] :as fact} at] (normalize-fact tx-time fact)
-        fval (dissoc fact :verter/id)
-        to-hash (if (= at tx-time)
-                  fval              ;; if no business time provided, hash only the fact value
-                  [fval (str at)])] ;; if business time provided, include it in a hash to make sure to record if it changed
-    {:key id :hash (vt/hash-it to-hash)}))
-
-(defn to-row [tx-time fact]
-  (let [[{:keys [verter/id] :as fact} at] (normalize-fact tx-time fact)
+(defn to-fact-row [fact]
+  (let [[{:keys [verter/id] :as fact} _] (normalize-fact fact)
         _ (validate-fact fact)
-        fval (dissoc fact :verter/id)
-        to-hash (if (= at tx-time)
-                  fval              ;; if no business time provided, hash only the fact value
-                  [fval (str at)])] ;; if business time provided, include it in a hash to make sure to record if it changed
+        fval (dissoc fact :verter/id)]
     [(str id)
      (nippy/freeze fval)
-     (vt/hash-it to-hash)
-     at]))
+     (vt/hash-it fact)]))
 
-(defn from-row [{:keys [key value at]}]
-  (-> value
-      nippy/thaw
-      (assoc :verter/id (edn/read-string key)
-             :at at)))
+(defn to-tx-row [tx-id tx-time fact]
+  (let [[{:keys [verter/id] :as fact} at] (normalize-fact tx-time fact)
+        business-time (or at tx-time)]
+    [tx-id
+     (vt/hash-it fact)
+     business-time
+     tx-time]))
+
+(defn from-row [{:keys [with-tx?]
+                 :or {with-tx? false}}
+                {:keys [key value business_time tx_time tx_id]}]
+  (let [v (nippy/thaw value)
+        fact (assoc v :verter/id (edn/read-string key)
+                      :at business_time)]
+    (if-not with-tx?
+      fact
+      (assoc fact
+             :tx-time tx_time
+             :tx-id tx_id))))
 
 (defn- merge-asc [facts]
   (->> facts
@@ -74,7 +77,7 @@
 (defn as-of
   "rollup of facts for this identity up until / as of a given time"
   [db id ts]
-  (-> (facts db id ts)
+  (-> (facts db id {:upto ts})
       merge-asc))
 
 (defn rollup

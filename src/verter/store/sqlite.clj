@@ -9,77 +9,80 @@
             [verter.tools :as vt]
             [inquery.core :as q]))
 
-(defn- make-insert-batch-query [facts tx-time]
-  (let [rows (mapv (partial v/to-row tx-time)
-                   facts)
+(defn- make-insert-facts-batch-query [facts]
+  (let [rows (mapv v/to-fact-row facts)
         [qhead & data] (qb/for-insert-multi :facts
-                                            [:key :value :hash :at]
+                                            [:key :value :hash]
                                             rows
                                             {})
         qfoot " on conflict do nothing"]
     (concat [(str qhead qfoot)] data)))
 
-(defn- inserted-hashes [facts]
-  (reduce (fn [a {:keys [hash key]}]
-            (-> a
-                (update :hashes conj hash)
-                (update :kvs conj {:key key
-                                   :hash hash})))
-    {:hashes [] :kvs []}
-    facts))
-
-(defn- last-inserted [rs]
-  ;; [{:last_insert_rowid() 42}]
-  (-> rs first vals first))
+(defn- make-insert-txs-batch-query [facts]
+  (let [tx-time (vt/now)
+        tx-id (vt/squuid)
+        rows (mapv (partial v/to-tx-row tx-id tx-time)
+                   facts)
+        [qhead & data] (qb/for-insert-multi :transactions
+                                            [:id :hash :business_time :at]
+                                            rows
+                                            {})
+        qfoot " on conflict do nothing"]
+    [tx-id tx-time (concat [(str qhead qfoot)] data)]))
 
 (defn- record-transaction [{:keys [ds queries]}
-                           tx-time inserted]
-  (let [{:keys [kvs hashes]} (->> inserted
-                                  (map (partial v/to-khash tx-time))
-                                  inserted-hashes)
-        sql (-> (queries :record-transaction))]
-    (->> (jdbc/execute! ds [sql tx-time (nippy/freeze hashes)]
-                        {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
-         last-inserted
-         (assoc {:at (vt/inst->date tx-time)
-                 :facts kvs} :tx-id))))
-
-(defn- record-facts [{:keys [ds]} facts tx-time]
-  (let [sql (make-insert-batch-query facts tx-time)
+                           facts]
+  (let [[tx-id tx-time sql] (make-insert-txs-batch-query facts)
         recorded (jdbc/execute! ds sql)]
     (if (= (-> recorded first :next.jdbc/update-count) 0)
-      ;;TODO: think how to deal with partial inserts on a batch insert with SQLite since it only returns last inserted row id
-      (println "no changes to identities were detected, and hence, these facts" facts "were NOT added at" (str tx-time))
-      facts)))
+      (let [noop (str "no changes to identities were detected, and hence, these facts " facts " were NOT added at " tx-time)]
+        (println noop)
+        {:noop noop})
+      {:tx-id tx-id})))
+
+(defn- record-facts [{:keys [ds]}
+                     facts]
+  (let [sql (make-insert-facts-batch-query facts)]
+    (jdbc/execute! ds sql
+                   {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})))
+
+(defn- update-insts [{:keys [at tx-time] :as fact}]
+  (let [f (if-not tx-time
+            fact
+            (update fact :tx-time vt/ts->date))]
+    (update f :at vt/ts->date)))
 
 (defn- find-facts
   "find all the facts about identity upto a certain time"
-  [{:keys [ds queries]} id ts]
+  [{:keys [ds schema queries]}
+   id
+   {:keys [upto]
+    :or {upto (vt/now)}
+    :as opts}]
   (let [sql (-> queries
                 :find-facts-up-to
                 (q/with-params {:key (str id)}))]
     (with-open [conn (jdbc/get-connection ds)]
-      (->> (jdbc/execute! conn [sql ts]
+      (->> (jdbc/execute! conn [sql upto]
                           {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
            (mapv (comp
-                   #(update % :at vt/ts->date)
-                   v/from-row))))))
+                   update-insts
+                   (partial v/from-row opts)))))))
 
 (defrecord Sqlite [ds queries]
   v/Identity
 
   (facts [this id]                                        ;; find facts up until now
-     (find-facts this id (vt/now)))
+     (find-facts this id {}))
 
-  (facts [this id ts]                                     ;; find facts up until a given time
-     (find-facts this id ts))
+  (facts [this id opts]                                   ;; find facts with options
+     (find-facts this id opts))
 
-  (add-facts [{:keys [ds] :as db} facts]   ;; add one or more facts
+  (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
     (when (seq facts)
-      (let [tx-time (vt/now)]
-        (jdbc/with-transaction [tx ds]
-          (some->> (record-facts db facts tx-time)
-                   (record-transaction db tx-time))))))
+      (jdbc/with-transaction [tx ds]
+        (record-facts db facts)
+        (record-transaction db facts))))
 
   (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
 
