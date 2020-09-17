@@ -64,10 +64,8 @@ until now there is nothing verter specific, we just creating a datasource. check
 => (def verter (vs/connect :postgres db))
 ```
 
-regardless of which data store verter is connected to API should behave the same way<br/>
-you can [connect with SQLite](#sqlite), if it is easier, then come back and follow the API examples
-
-> _SQLite support is almost done, but still in progress, so there might be some differences_
+regardless of which data store verter is connected to API will behave the same way<br/>
+hence, if it is easier, you can [connect with SQLite](#sqlite), then come back here and follow the API examples
 
 ### create institute of time
 
@@ -109,7 +107,7 @@ let's try this again:
 
 since we already know this fact about `:universe/two` at this business time.
 
-but.., let's update `:universe/two` business time:
+but.., let's update the business time of this, same, fact about `:universe/two`:
 
 ```clojure
 => (v/add-facts verter [[{:verter/id :universe/two :suns 3 :life? true} #inst "2020-09-09"]])
@@ -117,10 +115,11 @@ but.., let's update `:universe/two` business time:
 {:tx-id #uuid "5f62d5af-c4e1-475d-b086-3dad13015623"}
 ```
 
-same "recorded" result would be without a business time, since transaction time will be used instead (which changes.. one planck at a time):
+even if we did not provide an "time" at all the fact would be recorded<br/>
+since the "transaction time" will be used instead (which does change.. one planck at a time):
 
 ```clojure
-=> (v/add-facts verter [[{:verter/id :universe/two :suns 3 :life? true}]])
+=> (v/add-facts verter [{:verter/id :universe/two :suns 3 :life? true}])
 {:tx-id #uuid "5f62d6b3-df46-4d76-9b71-d8bc3619d791"}
 ```
 
@@ -181,7 +180,7 @@ and look at how universe was doing its magic by adding more suns over time:
 
 i.e. :point_up_2: no facts were really changed, but there was a change in "business time" that we did earlier.
 
-ah, yes "`:at`" is "business time". good catch!
+ah, yes "`:at`" is da "business time". good catch!
 
 ### with transaction intel
 
@@ -255,7 +254,7 @@ when looking for facts we can specify a certain time upto which the facts are ne
   :at #inst "2020-09-17T03:15:12.859748000-00:00"}]
 ```
 
-since the other 3 facts were added a bit after "`2020-09-17T03:20:00`", there is only one fact that "matter" in this case.
+since the other 3 facts were added a bit after "`2020-09-17T03:20:00`", there is only one fact that "matters" in this case.
 
 ## identity now
 
@@ -280,7 +279,7 @@ continuing with `:universe/sixty-six` with currently 4 facts:
 
 a quite frequent need is to see the identity "now": i.e. all the facts rolled up over time.
 
-this can be done with `v/rollup`:
+this can be done with a `rollup` function:
 
 ```clojure
 => (v/rollup verter :universe/sixty-six)
@@ -293,7 +292,7 @@ this can be done with `v/rollup`:
  :life? true}
 ```
 
-one interesting "fact" about this rollup example: the `moons`.
+one interesting "fact" about this rollup example: the `moons`.<br/>
 the last fact about the `moons` is that it is "nil", hence while it still shows up in the list of facts, unless it has a value, it won't show up in a rollup.
 
 ## identity "as of"
@@ -382,11 +381,11 @@ adding a missing data store comes down to 1, 2, 3
      "'big brother' move: the idenitity never existed"))
 ```
 
-take a look at [postgres](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/src/verter/store/postgres.clj#L63-L77) implementation to get an idea.
+take a look at [postgres](src/verter/store/postgres.clj) or, say, [sqlite]((src/verter/store/sqlite.clj)) implementations to get an idea.
 
 ### add a `connect` function
 
-take a look at [postgres](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/src/verter/store/postgres.clj#L81-L87) connect function.
+take a look at [postgres](src/verter/store/postgres.clj) or [sqlite]((src/verter/store/sqlite.clj)) connect function.
 
 the idea is to take a datasource of an existing data store and create an instance of the `Identity` protocol above.
 
@@ -396,7 +395,7 @@ depending on what a data store is you might (or not) need to create a schema whe
 
 of course redis "schema" would probably be just a couple of bucket names vs. a SQL database schema would need to create a couple of tables.
 
-take a look at the [postgres schema](https://github.com/tolitius/verter/blob/ffba06f9c2001ff31c2e8aaecf4ac401ee26e262/resources/verter/store/postgres/create-institute-of-time.sql) to get an idea.
+take a look at the [postgres schema](resources/verter/store/postgres/create-institute-of-time.sql) or [sqlite schema](resources/verter/store/sqlite/create-institute-of-time.sql) to get an idea.
 
 ----
 
