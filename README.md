@@ -16,6 +16,7 @@ his most famous adventure takes place in the year of 2084..
 - [adding facts](#adding-facts)
   - [don't record what is already known](#dont-record-what-is-already-known)
 - [looking at facts](#looking-at-facts)
+  - [with transaction intel](#with-transaction-intel)
   - [facts upto](#facts-upto)
   - [identity now](#identity-now)
   - [identity "as of"](#identity-as-of)
@@ -351,8 +352,8 @@ as of "`2020-09-17T03:20:00`" this universe had 13 moons and the answer was and 
 supported data stores:
 | data store | supported  | in progress  |
 |---|:-:|:-:|
-| PostgreSQL  | :white_check_mark: |                      |
-| SQLite      |                    |  :white_check_mark:  |
+| PostgreSQL  | :white_check_mark: |    |
+| SQLite      | :white_check_mark: |    |
 | MySQL       |  |  |
 | Redis       |  |  |
 | Cassandra   |  |  |
@@ -426,7 +427,8 @@ here is an example of using verter with a [SQLite database](https://sqlite.org/i
 ```
 
 ```clojure
-=> (pprint (v/facts verter :universe/one))
+=> (v/facts verter :universe/one)
+
 [{:suns 12,
   :planets #{:one :three :two},
   :verter/id :universe/one,
@@ -443,15 +445,20 @@ and here is what's brewing inside the database:
 $ sqlite3 dev/verter.db
 
 sqlite> select * from facts;
-1|:universe/one|NPY|8cc82db19a67cc61e8e4144a854c15fd|1600194803736
-2|:universe/two|NPY|0804a4e066f308756dcab8aa1dd35ae4|1567987200000
-3|:universe/sixty-six|NPY|b9bb678c38b5a29917a4a7baafdbf754|1600194803736
-4|:universe/one|NPY|8657a740c448d4fc46af054f94ed5cec|1600194822035
-5|:universe/two|NPY|6ef240c23aee0ecef51d710c09675022|1599609600000
+
+1|:universe/one|NPY|6f19337c3663044aeebe621321fed52a
+2|:universe/two|NPY|82f5ff2d5d5f61d8175b029b37036704
+3|:universe/sixty-six|NPY|fc303f3a3088da2eef9b706ed7de8a06
+4|:universe/one|NPY|1719aa1d06b9405a1c4a970d99d2c4fd
 
 sqlite> select * from transactions;
-1|1600194803736|NPY.ri 20bd8..
-2|1600194822035|NPY.ri c29c5..
+
+5f62e625-4bef-45a0-af73-2f3eefd22f96|6f19337c3663044aeebe621321fed52a|1600316965087|1600316965087
+5f62e625-4bef-45a0-af73-2f3eefd22f96|82f5ff2d5d5f61d8175b029b37036704|1567987200000|1600316965087
+5f62e625-4bef-45a0-af73-2f3eefd22f96|fc303f3a3088da2eef9b706ed7de8a06|1600316965087|1600316965087
+5f62e637-5f71-4c16-8501-931c79fc6e29|1719aa1d06b9405a1c4a970d99d2c4fd|1600316983411|1600316983411
+5f62e637-5f71-4c16-8501-931c79fc6e29|82f5ff2d5d5f61d8175b029b37036704|1599609600000|1600316983411
+5f62e637-5f71-4c16-8501-931c79fc6e29|fc303f3a3088da2eef9b706ed7de8a06|1600316983411|1600316983411
 ```
 
 # useless benchmarks

@@ -1,6 +1,6 @@
 (ns verter.store
   (:require [verter.store.postgres :as vp]
-            ; [verter.store.sqlite :as vsl]
+            [verter.store.sqlite :as vsl]
             ; [verter.store.mysql :as vm]
             ; [verter.store.oracle :as vo]
             ; [verter.store.mssql :as vms]
@@ -25,7 +25,7 @@
   ([dbtype datasource opts]
    (case dbtype
      :postgres (vp/connect datasource opts)
-     ; :sqlite (vsl/connect datasource opts)
+     :sqlite (vsl/connect datasource opts)
      (not-yet dbtype))))
 
 (defn create-institute-of-time
@@ -36,5 +36,5 @@
   ([dbtype datasource opts]
    (case dbtype
      :postgres (vp/create-institute-of-time datasource opts)
-     ; :sqlite (vsl/create-institute-of-time datasource opts)
+     :sqlite (vsl/create-institute-of-time datasource opts)
      (not-yet dbtype))))
