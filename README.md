@@ -69,10 +69,16 @@ hence, if it is easier, you can [connect with SQLite](#sqlite), then come back h
 
 ### create institute of time
 
-in case this is the first time verter is used with this database, the institute of time (verter tables/buckets) need to be created:
+in case this is _the first time_ verter is used with this database, the institute of time (verter tables/buckets) need to be created:
 
 ```clojure
 => (vs/create-institute-of-time :postgres db)
+```
+
+in case you need to create it in a particular database schema you can do it as well:
+
+```clojure
+=> (vs/create-institute-of-time :postgres db {:schema "foo_bar"})
 ```
 
 # adding facts

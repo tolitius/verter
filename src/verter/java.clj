@@ -14,7 +14,7 @@
             ^{:static true} [connect [String javax.sql.DataSource java.util.Map] verter.core.Identity]
             ^{:static true} [createInstituteOfTime [String javax.sql.DataSource] void]
             ^{:static true} [createInstituteOfTime [String javax.sql.DataSource java.util.Map] void]
-            ^{:static true} [addFacts [verter.core.Identity java.util.List] java.util.List]
+            ^{:static true} [addFacts [verter.core.Identity java.util.List] java.util.Map]
             ^{:static true} [facts [verter.core.Identity String] java.util.List]
             ; ^{:static true} [facts [verter.core.Identity String java.time.Instant] java.util.List]
             ; ^{:static true} [rollup [verter.core.Identity String] java.util.Map]
