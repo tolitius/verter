@@ -28,10 +28,10 @@ create table if not exists :schema.transactions (
     hash varchar not null,
 
     -- business time which by default is transaction time, but can be set to a desired business time
-    business_time timestamp not null,
+    business_time timestamptz not null,
 
     -- transaction time
-    at timestamp default current_timestamp not null
+    at timestamptz default current_timestamp not null
 );
 
 create index if not exists tx_time_idx on :schema.transactions (at desc);
