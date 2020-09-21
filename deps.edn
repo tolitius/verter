@@ -19,4 +19,4 @@
                     :main-opts ["-m" "deps-deploy.deps-deploy" "deploy" "verter.jar" "true"]}}}
 
 
-;; clojure -e "(compile 'verter.core)"; clojure -A:jar; clojure -A:deploy
+;; clojure -e "(compile 'verter.core)"; clojure -e "(compile 'verter.java)"; clojure -A:jar; clojure -A:deploy

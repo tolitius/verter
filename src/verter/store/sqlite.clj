@@ -81,8 +81,9 @@
   (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
     (when (seq facts)
       (jdbc/with-transaction [tx ds]
-        (record-facts db facts)
-        (record-transaction db facts))))
+        (let [with-tx (assoc db :ds tx)]
+          (record-facts db facts)
+          (record-transaction db facts)))))
 
   (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
 
