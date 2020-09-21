@@ -412,16 +412,23 @@ if you are interested and/or need more details, just open an [issue](https://git
 here is an example of using verter with a [SQLite database](https://sqlite.org/index.html):
 
 ```clojure
-;; this is from verter/dev.clj, but you could of course create a datasource on your own
-;; i.e. (hk/make-datasource {:jdbc-url "jdbc:sqlite:db/database.db"})
-
-=> (def db (start-db :sqlite))
+=> (require '[verter.core :as v]
+            '[verter.store :as vs]
+            '[hikari-cp.core :as hk])
+            
+=> (def db (hk/make-datasource {:jdbc-url "jdbc:sqlite:/tmp/multi-universe.db"}))
+=> (def verter (vs/connect :sqlite db))
 ```
 
-```clojure
-=> (def verter (vs/connect :sqlite db))
-=> (vs/create-institute-of-time :sqlite db)
+if it is the first time connecting to this database, we need to create a schema:
 
+```clojure
+=> (vs/create-institute-of-time :sqlite db)
+```
+
+ready to rock:
+
+```clojure
 => (v/add-facts verter [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
                         [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
                         {:verter/id :universe/sixty-six :answer 42}])
