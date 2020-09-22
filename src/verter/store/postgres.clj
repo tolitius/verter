@@ -101,3 +101,13 @@
                  (q/with-params {:schema {:as schema}}))]
      (with-open [conn (jdbc/get-connection ds)]
        (jdbc/execute! conn [sql])))))
+
+
+
+;; performance corner
+
+(def to-measure #{#'verter.store.postgres/make-insert-facts-batch-query
+                  #'verter.store.postgres/make-insert-txs-batch-query
+                  #'verter.store.postgres/record-transaction
+                  #'verter.store.postgres/record-facts
+                  #'next.jdbc/execute!})

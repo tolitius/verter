@@ -8,6 +8,7 @@
             ; [verter.store.cassandra :as vc]
             ; [verter.store.couchbase :as vcb]
             ;; ...
+            [verter.tools :as vt]
             ))
 
 (defn- not-yet [dbtype]
@@ -15,6 +16,10 @@
                        " data store... yet. but, but, you are very welcome to add this support."
                        " take a look at https://github.com/tolitius/verter#add-data-store")
                   {:dbtype dbtype})))
+
+(defn- with-metrics [{:keys [measure? log]} fns]
+  (when measure?
+    (vt/measure-it fns log)))
 
 ;; handrolled mutimethods: easier to navigate, follow and reason about
 ;; iff more sophistication arrives, use a Store connect/create-institute-of-time protocol
@@ -24,8 +29,12 @@
    (connect dbtype datasource {}))
   ([dbtype datasource opts]
    (case dbtype
-     :postgres (vp/connect datasource opts)
-     :sqlite (vsl/connect datasource opts)
+     :postgres (do
+                 (with-metrics opts vp/to-measure)
+                 (vp/connect datasource opts))
+     :sqlite (do
+                 (with-metrics opts vsl/to-measure)
+                 (vsl/connect datasource opts))
      (not-yet dbtype))))
 
 (defn create-institute-of-time

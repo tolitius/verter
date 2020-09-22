@@ -1,10 +1,23 @@
 (ns verter.tools
   (:require [cljhash.core :as hasher]
             [clojure.string :as s]
+            [calip.core :as calip]
             [taoensso.nippy :as nippy])
   (:import [com.google.common.hash Hashing
                                    Funnel
                                    PrimitiveSink]))
+
+(defn measure-it
+  ([fns]
+   (measure-it fns nil))
+  ([fns log]
+   (let [log (or log println)]
+     (calip/measure fns
+                    {:report (fn [{:keys [took fname]}]
+                               (log (format "%s took %,d ns" fname took)))}))))
+
+(defn unmeasure-it [fns]
+  (calip/uncalip fns))
 
 (def nippy-funnel
   (reify Funnel

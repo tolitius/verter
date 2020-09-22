@@ -1,5 +1,6 @@
 {:paths ["src" "resources" "classes"]
  :deps {tolitius/inquery {:mvn/version "0.1.13"}
+        tolitius/calip {:mvn/version "0.1.5"}
         com.danboykis/cljhash {:mvn/version "0.1.0"}
         com.taoensso/nippy {:mvn/version "2.15.2"}
         seancorfield/next.jdbc {:mvn/version "1.1.582"}}

@@ -102,3 +102,13 @@
        (mapv (fn [sql]
                (jdbc/execute! conn [sql]))
              qs)))))
+
+
+
+;; performance corner
+
+(def to-measure #{#'verter.store.sqlite/make-insert-facts-batch-query
+                  #'verter.store.sqlite/make-insert-txs-batch-query
+                  #'verter.store.sqlite/record-transaction
+                  #'verter.store.sqlite/record-facts
+                  #'next.jdbc/execute!})
