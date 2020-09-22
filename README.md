@@ -481,7 +481,7 @@ these are the numbers on top of Postgres:
 
 ## writes
 
-we'll create a few new universes to avoid "do nothing" tricks verter does on hash matches:
+we'll create 40,000 "double" facts (about suns and moons) and partition them in 80 batches 500 entries each:
 
 ```clojure
 => (def universe-42 (partition 500
