@@ -484,24 +484,24 @@ these are the numbers on top of Postgres:
 we'll create a few new universes to avoid "do nothing" tricks verter does on hash matches:
 
 ```clojure
-=> (def u40 (mapcat #(vector {:verter/id :universe/forty     :moons % :suns %}) (range 5500)))
-=> (def u41 (mapcat #(vector {:verter/id :universe/forty-one :moons % :suns %}) (range 5500)))
-=> (def u42 (mapcat #(vector {:verter/id :universe/forty-two :moons % :suns %}) (range 5500)))
+=> (def universe-42 (partition 500
+                      (mapcat #(vector {:verter/id :universe/forty-two :moons % :suns %})
+                                       (range 40000))))
+#'dev/universe-42
 ```
 
-and add them sequentially in a single thread, not even with "pmap":
+and add them to verter:
 
 ```clojure
-=> (time (do (v/add-facts verter u40)
-             (v/add-facts verter u41)
-             (v/add-facts verter u42)))
-
-"Elapsed time: 1009.084383 msecs"
+=> (time (doall (pmap (partial v/add-facts verter) universe-42)))
+"Elapsed time: 1089.960547 msecs"
 ```
 
-`3 * 5500` = `16,500` a second.<br/>
+that's about `40,000` a second.<br/>
 
-later we'll play with type hints, threads, smaller batch sizes would also help..</br>
+but of course the postgres is local in this bench which would usually not be the case.
+
+later we'll play with type hints, threads, better batch sizes would also help..</br>
 but the most time will always be in I/O, so this is close.
 
 ## reads
