@@ -387,11 +387,11 @@ adding a missing data store comes down to 1, 2, 3
      "'big brother' move: the idenitity never existed"))
 ```
 
-take a look at [postgres](src/verter/store/postgres.clj) or, say, [sqlite]((src/verter/store/sqlite.clj)) implementations to get an idea.
+take a look at [postgres](src/verter/store/postgres.clj) or, say, [sqlite](src/verter/store/sqlite.clj) implementations to get an idea.
 
 ### add a `connect` function
 
-take a look at [postgres](src/verter/store/postgres.clj) or [sqlite]((src/verter/store/sqlite.clj)) connect function.
+take a look at [postgres](src/verter/store/postgres.clj) or [sqlite](src/verter/store/sqlite.clj) connect function.
 
 the idea is to take a datasource of an existing data store and create an instance of the `Identity` protocol above.
 
