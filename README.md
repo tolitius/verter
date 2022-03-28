@@ -415,7 +415,7 @@ here is an example of using verter with a [SQLite database](https://sqlite.org/i
 => (require '[verter.core :as v]
             '[verter.store :as vs]
             '[hikari-cp.core :as hk])
-            
+
 => (def db (hk/make-datasource {:jdbc-url "jdbc:sqlite:/tmp/multi-universe.db"}))
 => (def verter (vs/connect :sqlite db))
 ```
@@ -539,7 +539,7 @@ these benchmarks are "entertainment" hence no "criterium", multiple threads, con
 
 # license
 
-Copyright © 2020 tolitius
+Copyright © 2022 tolitius
 
 Distributed under the Eclipse Public License either version 1.0 or (at
 your option) any later version.
