@@ -11,7 +11,14 @@
                               hikari-cp/hikari-cp {:mvn/version "2.13.0"}
                               org.xerial/sqlite-jdbc {:mvn/version "3.32.3.2"}
                               org.postgresql/postgresql {:mvn/version "42.2.16"}}}
-           :repl {;; :extra-paths ["test" "test/resources"]
+           :test {:extra-paths ["test" "test/resources"]
+                  :extra-deps {hikari-cp/hikari-cp {:mvn/version "2.13.0"}
+                               org.xerial/sqlite-jdbc {:mvn/version "3.32.3.2"}
+                               io.github.cognitect-labs/test-runner {:git/url "https://github.com/cognitect-labs/test-runner.git"
+                                                                     :sha "e7660458ce25bc4acb4ccc3e2415aae0a4907198"}}
+                  :main-opts ["-m" "cognitect.test-runner"]
+                  :exec-fn cognitect.test-runner.api/test}
+           :repl {:extra-paths ["test" "test/resources"]
                   :extra-deps {nrepl/nrepl {:mvn/version "0.7.0"}
                                cider/cider-nrepl {:mvn/version "0.22.4"}
                                com.bhauman/rebel-readline {:mvn/version "0.1.4"}}
