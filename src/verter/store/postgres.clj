@@ -64,7 +64,7 @@
                           {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
            (mapv (partial v/from-row opts))))))
 
-(defrecord Postgres [ds schema queries]
+(defrecord Postgres [ds outer-tx? schema queries]
   v/Identity
 
   (facts [this id]                                        ;; find facts up until now
@@ -75,21 +75,29 @@
 
   (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
     (when (seq facts)
-      (jdbc/with-transaction [tx ds {:read-only false}]
-        (let [with-tx (assoc db :ds tx)]
-          (record-facts with-tx facts)
-          (record-transaction with-tx facts)))))
+      (if-not outer-tx?
+        (jdbc/with-transaction [tx ds {:read-only false}]
+          (let [with-tx (assoc db :ds tx)]
+            (record-facts with-tx facts)
+            (record-transaction with-tx facts)))
+        (do
+          (record-facts db facts)
+          (record-transaction db facts)))))
 
   (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
 
 (defn connect
   ([ds]
    (connect ds {}))
-  ([ds {:keys [schema]
-        :or {schema "public"}}]
+  ([ds {:keys [schema outer-tx?]
+        :or {schema "public"
+             outer-tx? false}}]
    (->Postgres ds
+               outer-tx?
                schema
-               (v/load-queries "postgres"))))
+               (-> "postgres"
+                   v/load-queries
+                   (dissoc :create-institute-of-time)))))
 
 (defn create-institute-of-time
   ([ds]
@@ -101,8 +109,6 @@
                  (q/with-params {:schema {:as schema}}))]
      (with-open [conn (jdbc/get-connection ds)]
        (jdbc/execute! conn [sql])))))
-
-
 
 ;; performance corner
 

@@ -47,3 +47,10 @@
      :postgres (vp/create-institute-of-time datasource opts)
      :sqlite (vsl/create-institute-of-time datasource opts)
      (not-yet dbtype))))
+
+(defn within-tx
+  ;; for now applies to all stores, but could be store specific in the future
+  [store tx]
+  (assoc store
+         :ds tx
+         :outer-tx? true))
