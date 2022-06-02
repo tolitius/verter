@@ -25,6 +25,7 @@ his most famous adventure takes place in the year of 2084..
     - [add a `connect` function](#add-a-connect-function)
     - [create schema](#create-schema)
   - [SQLite](#sqlite)
+- [transactions](#transactions)  
 - [useless benchmarks](#useless-benchmarks)
   - [writes](#writes)
   - [reads](#reads)
@@ -471,6 +472,26 @@ sqlite> select * from transactions;
 5f62e637-5f71-4c16-8501-931c79fc6e29|1719aa1d06b9405a1c4a970d99d2c4fd|1600316983411|1600316983411
 5f62e637-5f71-4c16-8501-931c79fc6e29|82f5ff2d5d5f61d8175b029b37036704|1599609600000|1600316983411
 5f62e637-5f71-4c16-8501-931c79fc6e29|fc303f3a3088da2eef9b706ed7de8a06|1600316983411|1600316983411
+```
+
+# transactions
+
+by default verter stores facts and its metadata within a _database_ transaction, if a backing store (postgresql, sqlite, etc.) supports such transactions of course.
+
+in cases when facts are recorded as part of an existing (outer) database transaction, in order to avoid nesting transactions, verter can be wrapped into the `within-tx` function:
+
+```clojure
+=> (vs/within-tx verter tx)
+```
+
+which tells verter it runs within an existing/outer transaction, and there is no need for an internal/default one.
+
+for example, if a JDBC store is used:
+
+```clojure
+=> (jdbc/with-transaction [tx db {:read-only false}]
+    (let [vt (vs/within-tx verter tx)]
+      (v/add-facts vt [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}])))
 ```
 
 # useless benchmarks
