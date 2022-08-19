@@ -59,21 +59,30 @@
                 :find-facts-up-to
                 (q/with-params {:key (str id)
                                 :schema {:as schema}}))]
-    (with-open [conn (jdbc/get-connection ds)]
-      (->> (jdbc/execute! conn [sql upto]
-                          {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
-           (mapv (partial v/from-row opts))))))
+    (->> (jdbc/execute! ds [sql upto]
+                        {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+         (mapv (partial v/from-row opts)))))
 
 (defrecord Postgres [ds outer-tx? schema queries]
   v/Identity
 
-  (facts [this id]                                        ;; find facts up until now
-     (find-facts this id {}))
+  (facts [{:keys [ds] :as db}                             ;; find facts up until now
+          id]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts (assoc db :ds conn) id {}))
+      (find-facts db id {})))
 
-  (facts [this id opts]                                   ;; find facts with options
-     (find-facts this id opts))
+  (facts [{:keys [ds] :as db}                             ;; find facts with options
+          id
+          opts]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts (assoc db :ds conn) id opts))
+      (find-facts db id opts)))
 
-  (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
+  (add-facts [{:keys [ds] :as db}                         ;; add one or more facts
+              facts]
     (when (seq facts)
       (if-not outer-tx?
         (jdbc/with-transaction [tx ds {:read-only false}]
