@@ -1,4 +1,10 @@
 # changelog
+
+## 0.1.15
+###### Fri Aug 19 12:52:34 2022 -0400
+
+* [ac3f6b7](/commit/ac3f6b7) [postgres find facts]: support for outter transaction
+
 ## 0.1.14
 ###### Tue Aug 2 09:54:41 2022 -0400
 
