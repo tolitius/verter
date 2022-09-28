@@ -1,5 +1,11 @@
 # changelog
 
+## 0.1.16
+###### Wed Sep 28 19:41:57 2022 -0400
+
+* [93b2ef8](../../commit/93b2ef80e55ee353f21954e4ecd42f9603543483) update nippy<br/>
+  thanks [@thomascothran](https://github.com/thomascothran)!
+
 ## 0.1.15
 ###### Fri Aug 19 12:52:34 2022 -0400
 
