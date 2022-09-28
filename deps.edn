@@ -2,7 +2,7 @@
  :deps {tolitius/inquery {:mvn/version "0.1.13"}
         tolitius/calip {:mvn/version "0.1.8"}
         com.danboykis/cljhash {:mvn/version "0.1.0"}
-        com.taoensso/nippy {:mvn/version "2.15.2"}
+        com.taoensso/nippy {:mvn/version "3.2.0"}
         com.github.seancorfield/next.jdbc {:mvn/version "1.2.780"}}
  :aliases {:dev {:extra-paths ["dev"]
                  ;; :main-opts ["-i" "dev/dev.clj" "-e" "(in-ns,'dev)"]
