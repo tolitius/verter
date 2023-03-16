@@ -3,8 +3,6 @@
             [next.jdbc.sql.builder :as qb]
             [next.jdbc.date-time]
             [next.jdbc.result-set :as jdbcr]
-            [clojure.edn :as edn]
-            [taoensso.nippy :as nippy]
             [verter.core :as v]
             [verter.tools :as vt]
             [inquery.core :as q]))
@@ -32,7 +30,7 @@
                             do nothing"]
     [tx-id tx-time (concat [(str qhead qfoot)] data)]))
 
-(defn- record-transaction [{:keys [ds schema queries]}
+(defn- record-transaction [{:keys [ds schema]}
                            facts]
   (let [[tx-id tx-time sql] (make-insert-txs-batch-query schema facts)
         recorded (jdbc/execute! ds sql)]
@@ -45,8 +43,7 @@
 (defn- record-facts [{:keys [ds schema]}
                      facts]
   (let [sql (make-insert-facts-batch-query schema facts)]
-    (jdbc/execute! ds sql
-                   {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})))
+    (jdbc/execute! ds sql)))
 
 (defn- find-facts
   "find all the facts about identity upto a certain time"
