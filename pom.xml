@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>tolitius</groupId>
   <artifactId>verter</artifactId>
-  <version>0.1.17-SNAPSHOT</version>
+  <version>0.1.18-SNAPSHOT</version>
   <name>verter</name>
   <description>curator of the institute of time</description>
   <url>https://github.com/tolitius/verter</url>

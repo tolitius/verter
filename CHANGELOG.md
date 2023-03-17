@@ -1,5 +1,11 @@
 # changelog
 
+## 0.1.17
+###### Fri Mar 17 13:31:16 2023 -0600
+
+* [839ebcc](../../commit/839ebcc8c7e7f0e7ad87917a650224c210ad3392) optimize record-facts<br/>
+  thanks [@sirmspencer](https://github.com/sirmspencer)!
+
 ## 0.1.16
 ###### Wed Sep 28 19:41:57 2022 -0400
 
