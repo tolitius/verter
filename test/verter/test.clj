@@ -25,3 +25,25 @@
 
          (tt/without-ts
            (v/facts tt/conn :universe/one)))))
+
+(deftest should-rollup
+  (v/add-facts tt/conn [{:verter/id :universe/sixty-six :suns 42 :planets #{:and-all :earth}, :life? true}
+                        {:verter/id :universe/sixty-six :moons 42}
+                        {:verter/id :universe/sixty-six :moons nil}])
+  (is (= {:suns 42,
+          :planets #{:and-all :earth},
+          :life? true,
+          :verter/id :universe/sixty-six}
+
+         (tt/without-ts
+           (v/rollup tt/conn :universe/sixty-six))))
+
+  (is (= {:suns 42,
+          :planets #{:and-all :earth},
+          :life? true,
+          :verter/id :universe/sixty-six,
+          :moons nil}
+
+         (tt/without-ts
+           (v/rollup tt/conn :universe/sixty-six
+                     {:with-nils? true})))))

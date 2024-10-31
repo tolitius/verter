@@ -69,19 +69,25 @@
              :tx-time tx_time
              :tx-id tx_id))))
 
-(defn- merge-asc [facts]
-  (->> facts
-       (apply merge)
-       vt/remove-nil-vals))
+(defn- merge-asc [facts
+                  {:keys [with-nils?]}]
+  (let [merged (apply merge facts)]
+    (if with-nils?
+      merged
+      (vt/remove-nil-vals merged))))
 
 (defn as-of
   "rollup of facts for this identity up until / as of a given time"
-  [db id ts]
-  (-> (facts db id {:upto ts})
-      merge-asc))
+  ([db id ts]
+   (as-of db id ts {}))
+  ([db id ts opts]
+   (-> (facts db id {:upto ts})
+       (merge-asc opts))))
 
 (defn rollup
   "rollup of facts for this identity up until now"
-  [db id]
-  (-> (facts db id)
-      merge-asc))
+  ([db id]
+   (rollup db id {}))
+  ([db id opts]
+   (-> (facts db id)
+       (merge-asc opts))))

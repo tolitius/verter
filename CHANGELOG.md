@@ -1,5 +1,10 @@
 # changelog
 
+## 0.1.18
+###### Thu Oct 31 13:42:28 2024 -0600
+
+* add `{:with-nils? true}` to `rollup` and `as-of` to return deleted facts
+
 ## 0.1.17
 ###### Fri Mar 17 13:31:16 2023 -0600
 

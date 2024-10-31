@@ -37,5 +37,7 @@
        (instance? HikariProxyConnection)))
 
 (defn without-ts [facts]
-  (mapv #(dissoc % :at)
-        facts))
+  (if (map? facts)
+    (dissoc facts :at)
+    (mapv #(dissoc % :at)
+          facts)))
