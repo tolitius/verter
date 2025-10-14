@@ -1,5 +1,10 @@
 # changelog
 
+## 0.1.19
+###### Tue Oct 14 00:42:24 2025 -0600
+
+* add verter.family: a.k.a. child support
+
 ## 0.1.18
 ###### Thu Oct 31 13:42:28 2024 -0600
 

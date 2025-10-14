@@ -36,8 +36,16 @@
        .getConnection
        (instance? HikariProxyConnection)))
 
-(defn without-ts [facts]
-  (if (map? facts)
-    (dissoc facts :at)
-    (mapv #(dissoc % :at)
-          facts)))
+(defn without-ts [data]
+  (cond
+    (map? data)
+    (into {} (map (fn [[k v]]
+                   [k (if (= k :at)
+                        nil
+                        (without-ts v))])
+                 (dissoc data :at)))
+
+    (sequential? data)
+    (mapv without-ts data)
+
+    :else data))

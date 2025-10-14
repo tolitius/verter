@@ -20,12 +20,13 @@ his most famous adventure takes place in the year of 2084..
   - [facts upto](#facts-upto)
   - [identity now](#identity-now)
   - [identity "as of"](#identity-as-of)
+  - [child support](#child-support)
 - [add data store](#add-data-store)
     - [implement `Identity` protocol](#implement-identity-protocol)
     - [add a `connect` function](#add-a-connect-function)
     - [create schema](#create-schema)
   - [SQLite](#sqlite)
-- [transactions](#transactions)  
+- [transactions](#transactions)
 - [useless benchmarks](#useless-benchmarks)
   - [writes](#writes)
   - [reads](#reads)
@@ -352,6 +353,144 @@ let's look at this identity (`:universe/sixty-six`) upto this business time:
 ```
 
 as of "`2020-09-17T03:20:00`" this universe had 13 moons and the answer was and still is.. 42.
+
+## child support
+
+sometimes an identity has other identities that belong to it. for example a universe might have star systems, and those star systems have their own facts and history.
+
+when you add, update, or remove these child identities, you want to:
+
+1. keep complete history of both parent and children
+2. know which children belonged to the parent at any point in time
+3. track when children were added or removed
+
+`verter.family` helps manage these parent child relationships while keeping their histories separate and clean.
+
+### add children
+
+```clojure
+(require '[verter.family :as vf])
+
+;; create parent
+(v/add-facts verter [{:verter/id :universe/andromeda
+                      :type :spiral
+                      :age-billion-years 10}])
+
+;; add star systems to the universe
+(vf/add-child verter
+              :universe/andromeda
+              :star-systems                           ;; <== child type
+              {:verter/id :star-system/alpha-centauri
+               :stars 3
+               :planets 2
+               :has-life? true})
+
+(vf/add-child verter
+              :universe/andromeda
+              :star-systems
+              {:verter/id :star-system/sirius
+               :stars 2
+               :planets 1})
+```
+
+### update parent and children independently
+
+```clojure
+;; update parent: no children involved
+(v/add-facts verter [{:verter/id :universe/andromeda
+                      :age-billion-years 10.5}])
+
+;; update child: just regular add-facts
+(v/add-facts verter [{:verter/id :star-system/alpha-centauri
+                      :planets 3}])  ;; discovered another planet
+```
+
+### remove children
+
+```clojure
+(vf/remove-child verter
+                 :universe/andromeda
+                 :star-systems
+                 :star-system/alpha-centauri)
+```
+
+### find children
+
+```clojure
+;; active children only
+(vf/find-children verter :universe/andromeda :star-systems)
+
+=> {:star-system/sirius
+    {:verter/id :star-system/sirius
+     :stars 2
+     :planets 1
+     :at #inst "2084-01-05"}}
+
+;; include deleted children
+(vf/find-children verter
+                  :universe/andromeda
+                  :star-systems
+                  {:with-deleted? true})
+
+=> {:star-system/alpha-centauri
+    {:verter/id :star-system/alpha-centauri
+     :stars 3
+     :planets 3
+     :has-life? true
+     :deleted? true            ;; <== it is here, but marked as deleted
+     :at #inst "2084-09-09"}
+
+    :star-system/sirius
+    {:verter/id :star-system/sirius
+     :stars 2
+     :planets 1
+     :at #inst "2084-01-05"}}
+```
+
+### time travel with children
+
+```clojure
+;; what children existed on a specific date?
+(vf/find-children-at verter
+                     :universe/andromeda
+                     :star-systems
+                     #inst "2084-05-15")
+
+=> {:star-system/alpha-centauri
+    {:verter/id :star-system/alpha-centauri
+     :stars 3
+     :planets 2  ;; before third planet discovered
+     :has-life? true
+     :at #inst "2084-01-01"}
+
+    :star-system/sirius
+    {:verter/id :star-system/sirius
+     :stars 2
+     :planets 1
+     :at #inst "2084-01-05"}}
+```
+
+### multiple child types
+
+each parent can have different types of children, and each type maintains its own history:
+
+```clojure
+;; add different child types
+(vf/add-child verter
+              :universe/andromeda
+              :anomalies
+              {:verter/id :anomaly/black-hole-42
+               :type :supermassive
+               :mass-solar-masses 1000000})
+
+;; query each type independently
+(vf/find-children verter :universe/andromeda :star-systems)
+(vf/find-children verter :universe/andromeda :anomalies)
+```
+
+the parent's history stays clean: it only tracks its own facts.
+the relationship between parent and children is managed separately,
+so you can always reconstruct who belonged to whom at any point in time.
 
 # add data store
 
