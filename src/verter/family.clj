@@ -17,7 +17,8 @@
 
 (defn add-child
   "add child to parent's family of given type.
-   child-facts must include :verter/id"
+   child-facts must include :verter/id.
+   concurrent adds are safe since each child is a separate key"
   [verter
    parent-id
    child-type
@@ -27,12 +28,11 @@
     (throw (ex-info "child-facts must include :verter/id"
                     {:child-facts child-facts})))
   (let [child-id (:verter/id child-facts)
-        fam-id (family-id parent-id child-type)
-        current-ids (get (v/rollup verter fam-id) :ids #{})]
+        fam-id (family-id parent-id child-type)]
     (v/add-facts verter
                  [child-facts
                   {:verter/id fam-id
-                   :ids (conj current-ids child-id)}])))
+                   child-id {:state :active}}])))
 
 (defn remove-child
   "remove child from parent's family and mark as deleted"
@@ -52,13 +52,12 @@
     business-time]
    (validate-child-type child-type)
    (let [fam-id (family-id parent-id child-type)
-         current-ids (get (v/rollup verter fam-id) :ids #{})
          child-delete (if business-time
                        [{:verter/id child-id :deleted? true} business-time]
                        {:verter/id child-id :deleted? true})]
      (v/add-facts verter
                   [{:verter/id fam-id
-                    :ids (disj current-ids child-id)}
+                    child-id nil}
                    child-delete]))))
 
 (defn find-children
@@ -79,12 +78,13 @@
      :or {with-deleted? false}}]
    (validate-child-type child-type)
    (let [fam-id (family-id parent-id child-type)
-         all-ids (->> (v/facts verter fam-id)
-                      (keep :ids)
-                      (reduce into #{}))
+         family-facts (v/rollup verter fam-id {:with-nils? with-deleted?})
+         child-ids (->> family-facts
+                       (remove (fn [[k _]] (#{:verter/id :at} k)))
+                       (map first))
          children (map (fn [child-id]
                         [child-id (v/rollup verter child-id)])
-                      all-ids)
+                      child-ids)
          all-children (into {} children)]
      (if with-deleted?
        all-children
@@ -101,7 +101,9 @@
   (validate-child-type child-type)
   (let [fam-id (family-id parent-id child-type)
         family-state (v/as-of verter fam-id business-time)
-        child-ids (get family-state :ids #{})
+        child-ids (->> family-state
+                      (remove (fn [[k _]] (#{:verter/id :at} k)))
+                      (map first))
         children (map (fn [child-id]
                        [child-id (v/as-of verter child-id business-time)])
                      child-ids)]
