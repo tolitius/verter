@@ -34,6 +34,25 @@
                   {:verter/id fam-id
                    child-id {:state :active}}])))
 
+(defn add-children
+  "adds multiple children of a specific type to a parent in a single transaction"
+  [verter
+   parent-id
+   child-type
+   children-facts]
+  (validate-child-type child-type)
+  (doseq [child-facts children-facts]
+    (when-not (:verter/id child-facts)
+      (throw (ex-info "child facts must include :verter/id"
+                      {:child-fact child-facts}))))
+  (let [family-id (family-id parent-id child-type)
+        facts (mapcat (fn [child-facts]
+                        [child-facts 
+                         {:verter/id family-id
+                         (:verter/id child-facts) {:state :active}}])
+                      children-facts)]
+    (v/add-facts verter facts)))
+
 (defn remove-child
   "remove child from parent's family and mark as deleted"
   ([verter
