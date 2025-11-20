@@ -34,6 +34,27 @@
                   {:verter/id fam-id
                    child-id {:state :active}}])))
 
+(defn add-children
+  "adds multiple children of a specific type to a parent.
+   constructs and adds all the child facts and 
+   parent-child relationship facts in a single call to v/add-facts"
+  [verter
+   parent-id
+   child-type
+   children-facts]
+  (validate-child-type child-type)
+  (when-let [invalid-facts (seq (remove :verter/id children-facts))]
+    (throw (ex-info "Each child fact must include :verter/id"
+                    {:facts-without-verter-id invalid-facts})))
+  (let [family-id (family-id parent-id child-type)
+        relationship-facts (mapv (fn [child-fact]
+                                   (let [child-id (:verter/id child-fact)]
+                                     {:verter/id family-id
+                                      child-id   {:state :active}}))
+                                 children-facts)
+        facts (into (vec children-facts) relationship-facts)]
+    (v/add-facts verter facts)))
+
 (defn remove-child
   "remove child from parent's family and mark as deleted"
   ([verter
@@ -53,8 +74,8 @@
    (validate-child-type child-type)
    (let [fam-id (family-id parent-id child-type)
          child-delete (if business-time
-                       [{:verter/id child-id :deleted? true} business-time]
-                       {:verter/id child-id :deleted? true})]
+                        [{:verter/id child-id :deleted? true} business-time]
+                        {:verter/id child-id :deleted? true})]
      (v/add-facts verter
                   [{:verter/id fam-id
                     child-id nil}
@@ -80,11 +101,11 @@
    (let [fam-id (family-id parent-id child-type)
          family-facts (v/rollup verter fam-id {:with-nils? with-deleted?})
          child-ids (->> family-facts
-                       (remove (fn [[k _]] (#{:verter/id :at} k)))
-                       (map first))
+                        (remove (fn [[k _]] (#{:verter/id :at} k)))
+                        (map first))
          children (map (fn [child-id]
-                        [child-id (v/rollup verter child-id)])
-                      child-ids)
+                         [child-id (v/rollup verter child-id)])
+                       child-ids)
          all-children (into {} children)]
      (if with-deleted?
        all-children
@@ -102,9 +123,9 @@
   (let [fam-id (family-id parent-id child-type)
         family-state (v/as-of verter fam-id business-time)
         child-ids (->> family-state
-                      (remove (fn [[k _]] (#{:verter/id :at} k)))
-                      (map first))
+                       (remove (fn [[k _]] (#{:verter/id :at} k)))
+                       (map first))
         children (map (fn [child-id]
-                       [child-id (v/as-of verter child-id business-time)])
-                     child-ids)]
+                        [child-id (v/as-of verter child-id business-time)])
+                      child-ids)]
     (into {} children)))
