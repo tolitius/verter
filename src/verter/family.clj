@@ -35,24 +35,22 @@
                    child-id {:state :active}}])))
 
 (defn add-children
-  "adds multiple children of a specific type to a parent.
-   constructs and adds all the child facts and 
-   parent-child relationship facts in a single call to v/add-facts"
+  "adds multiple children of a specific type to a parent in a single transaction"
   [verter
    parent-id
    child-type
    children-facts]
   (validate-child-type child-type)
-  (when-let [invalid-facts (seq (remove :verter/id children-facts))]
-    (throw (ex-info "Each child fact must include :verter/id"
-                    {:facts-without-verter-id invalid-facts})))
+  (doseq [child-fact children-facts]
+    (when-not (:verter/id child-fact)
+      (throw (ex-info "each child fact must include :verter/id"
+                      {:child-fact child-fact}))))
   (let [family-id (family-id parent-id child-type)
-        relationship-facts (mapv (fn [child-fact]
-                                   (let [child-id (:verter/id child-fact)]
-                                     {:verter/id family-id
-                                      child-id   {:state :active}}))
-                                 children-facts)
-        facts (into (vec children-facts) relationship-facts)]
+        facts (mapcat (fn [child-fact]
+                        [child-fact 
+                         {:verter/id family-id
+                         (:verter/id child-fact) {:state :active}}])
+                      children-facts)]
     (v/add-facts verter facts)))
 
 (defn remove-child
