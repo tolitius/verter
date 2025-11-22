@@ -41,15 +41,15 @@
    child-type
    children-facts]
   (validate-child-type child-type)
-  (doseq [child-fact children-facts]
-    (when-not (:verter/id child-fact)
-      (throw (ex-info "each child fact must include :verter/id"
-                      {:child-fact child-fact}))))
+  (doseq [child-facts children-facts]
+    (when-not (:verter/id child-facts)
+      (throw (ex-info "child facts must include :verter/id"
+                      {:child-fact child-facts}))))
   (let [family-id (family-id parent-id child-type)
-        facts (mapcat (fn [child-fact]
-                        [child-fact 
+        facts (mapcat (fn [child-facts]
+                        [child-facts 
                          {:verter/id family-id
-                         (:verter/id child-fact) {:state :active}}])
+                         (:verter/id child-facts) {:state :active}}])
                       children-facts)]
     (v/add-facts verter facts)))
 

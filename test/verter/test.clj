@@ -74,6 +74,33 @@
          (tt/without-ts
            (vf/find-children tt/conn :universe/one :star-systems)))))
 
+(deftest should-add-many-children-at-once
+  (vf/add-children tt/conn
+                   :universe/one
+                   :star-systems
+                   [{:verter/id :star-system/gamma
+                     :stars 5
+                     :planets 8}
+                    {:verter/id :star-system/delta
+                     :stars 1
+                     :planets 3}
+                    {:verter/id :star-system/epsilon
+                     :stars 2
+                     :planets 0}])
+
+  (is (= {:star-system/gamma {:verter/id :star-system/gamma
+                              :stars 5
+                              :planets 8}
+          :star-system/delta {:verter/id :star-system/delta
+                              :stars 1
+                              :planets 3}
+          :star-system/epsilon {:verter/id :star-system/epsilon
+                                :stars 2
+                                :planets 0}}
+
+         (tt/without-ts
+          (vf/find-children tt/conn :universe/one :star-systems)))))
+
 (deftest should-find-children-with-deleted
   (vf/add-child tt/conn
                 :universe/one
