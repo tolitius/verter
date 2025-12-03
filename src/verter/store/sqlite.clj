@@ -69,6 +69,23 @@
                    update-insts
                    (partial v/from-row opts)))))))
 
+(defn- find-facts-for-multiple-ids
+  "find all the facts about identity upto a certain time"
+  [{:keys [ds schema queries]}
+   ids
+   {:keys [upto]
+    :or {upto (vt/now)}
+    :as opts}]
+  (let [sql (-> queries
+                :find-facts-for-multiple-keys-up-to
+                (q/with-params {:keys {:as (q/seq->in-params ids)}}))]
+    (with-open [conn (jdbc/get-connection ds)]
+      (->> (jdbc/execute! conn [sql upto]
+                          {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+           (mapv (comp
+                   update-insts
+                   (partial v/from-row opts)))))))
+
 (defrecord Sqlite [ds queries]
   v/Identity
 
@@ -77,6 +94,12 @@
 
   (facts [this id opts]                                   ;; find facts with options
      (find-facts this id opts))
+
+(facts-for-multiple-ids [this id]
+  (find-facts-for-multiple-ids this id {}))
+
+  (facts-for-multiple-ids [this id opts]
+    (find-facts-for-multiple-ids this id opts))
 
   (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
     (when (seq facts)

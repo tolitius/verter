@@ -14,12 +14,17 @@
      if time is not specified, a single transaction time is used")
 
   (obliterate [this id]
-     "'big brother' move: the idenitity never existed"))
+     "'big brother' move: the idenitity never existed")
+
+  (facts-for-multiple-ids [this ids]
+                 [this ids opts]
+    "find the facts for multiple identities in a single call"))
 
 (defn load-queries [store]
   (q/make-query-map [:create-institute-of-time
                      :record-transaction
                      :find-facts-up-to
+                     :find-facts-for-multiple-keys-up-to
                      :add-facts
                      :obliterate-identity]
                     {:path (str "verter/store/" store)}))

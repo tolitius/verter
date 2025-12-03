@@ -60,6 +60,21 @@
                         {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
          (mapv (partial v/from-row opts)))))
 
+(defn- find-facts-for-multiple-ids
+  "find all the facts about multiple identities upto a certain time"
+  [{:keys [ds schema queries]}
+   ids
+   {:keys [upto]
+    :or {upto (vt/now)}
+    :as opts}]
+  (let [sql (-> queries
+                :find-facts-for-multiple-keys-up-to
+                (q/with-params {:keys {:as (q/seq->in-params ids)}
+                                :schema {:as schema}}))]
+    (->> (jdbc/execute! ds [sql upto]
+                        {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
+         (mapv (partial v/from-row opts)))))
+
 (defrecord Postgres [ds outer-tx? schema queries]
   v/Identity
 
@@ -77,6 +92,21 @@
       (with-open [conn (jdbc/get-connection ds)]
         (find-facts (assoc db :ds conn) id opts))
       (find-facts db id opts)))
+
+  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts up until now
+                  ids]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts-for-multiple-ids (assoc db :ds conn) ids {}))
+      (find-facts-for-multiple-ids db ids {})))
+
+  (facts-for-multiple-ids [{:keys [ds] :as db}                             ;; find facts with options
+                  ids
+                  opts]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts-for-multiple-ids (assoc db :ds conn) ids opts))
+      (find-facts-for-multiple-ids db ids {})))
 
   (add-facts [{:keys [ds] :as db}                         ;; add one or more facts
               facts]

@@ -169,3 +169,27 @@
                                  :universe/one
                                  :star-systems
                                  (java.time.Instant/now)))))))
+
+
+(deftest find-facts-for-an-id
+  (v/add-facts tt/conn [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
+  (is (= [{:verter/id :universe/sixty-six :answer 42}]
+
+         (tt/without-ts
+           (v/facts tt/conn :universe/sixty-six)))))
+
+(deftest find-facts-for-multiple-ids
+  (v/add-facts tt/conn [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+                        [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
+  (v/add-facts tt/conn [{:verter/id :universe/one :suns 42 :planets #{:one :two :three}}
+                        [{:verter/id :universe/three :suns 3 :life? true} #inst "2020-09-09"]
+                        {:verter/id :universe/sixty-six :answer 42}])
+  (is (= [{:verter/id :universe/three :suns 3 :life? true}
+          {:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
+          {:verter/id :universe/one :suns 42 :planets #{:one :two :three}}]
+
+         (tt/without-ts
+           (v/facts-for-multiple-ids tt/conn [:universe/one :universe/three])))))
