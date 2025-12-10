@@ -107,7 +107,7 @@
 
   (obliterate [this id])                                ;; "big brother" move: idenitity never existed
 
-  v/Identities
+  v/Multi
 
   (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts up until now
                            ids]

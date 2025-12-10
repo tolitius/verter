@@ -16,7 +16,7 @@
   (obliterate [this id]
      "'big brother' move: the idenitity never existed"))
 
-(defprotocol Identities
+(defprotocol Multi
   (facts-for-multiple-ids [this ids]
     [this ids opts]
     "find the facts for multiple identities in a single call"))

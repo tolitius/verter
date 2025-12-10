@@ -104,7 +104,7 @@
 
   (obliterate [this id])                                  ;; "big brother" move: idenitity never existed
 
-  v/Identities
+  v/Multi
 
   (facts-for-multiple-ids [this ids]
     (find-facts-for-multiple-ids this ids {}))
