@@ -95,12 +95,6 @@
   (facts [this id opts]                                   ;; find facts with options
      (find-facts this id opts))
 
-(facts-for-multiple-ids [this id]
-  (find-facts-for-multiple-ids this id {}))
-
-  (facts-for-multiple-ids [this id opts]
-    (find-facts-for-multiple-ids this id opts))
-
   (add-facts [{:keys [ds] :as db} facts]                  ;; add one or more facts
     (when (seq facts)
       (jdbc/with-transaction [tx ds {:read-only false}]
@@ -108,7 +102,15 @@
           (record-facts with-tx facts)
           (record-transaction with-tx facts)))))
 
-  (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
+  (obliterate [this id])                                  ;; "big brother" move: idenitity never existed
+
+  v/Identities
+
+  (facts-for-multiple-ids [this ids]
+    (find-facts-for-multiple-ids this ids {}))
+
+  (facts-for-multiple-ids [this ids opts]
+    (find-facts-for-multiple-ids this ids opts)))
 
 (defn connect [ds opts]
    (->Sqlite ds

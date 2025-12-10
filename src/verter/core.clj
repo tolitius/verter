@@ -14,10 +14,11 @@
      if time is not specified, a single transaction time is used")
 
   (obliterate [this id]
-     "'big brother' move: the idenitity never existed")
+     "'big brother' move: the idenitity never existed"))
 
+(defprotocol Identities
   (facts-for-multiple-ids [this ids]
-                 [this ids opts]
+    [this ids opts]
     "find the facts for multiple identities in a single call"))
 
 (defn load-queries [store]

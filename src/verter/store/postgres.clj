@@ -93,21 +93,6 @@
         (find-facts (assoc db :ds conn) id opts))
       (find-facts db id opts)))
 
-  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts up until now
-                  ids]
-    (if-not outer-tx?
-      (with-open [conn (jdbc/get-connection ds)]
-        (find-facts-for-multiple-ids (assoc db :ds conn) ids {}))
-      (find-facts-for-multiple-ids db ids {})))
-
-  (facts-for-multiple-ids [{:keys [ds] :as db}                             ;; find facts with options
-                  ids
-                  opts]
-    (if-not outer-tx?
-      (with-open [conn (jdbc/get-connection ds)]
-        (find-facts-for-multiple-ids (assoc db :ds conn) ids opts))
-      (find-facts-for-multiple-ids db ids {})))
-
   (add-facts [{:keys [ds] :as db}                         ;; add one or more facts
               facts]
     (when (seq facts)
@@ -120,7 +105,24 @@
           (record-facts db facts)
           (record-transaction db facts)))))
 
-  (obliterate [this id]))                                 ;; "big brother" move: idenitity never existed
+  (obliterate [this id])                                ;; "big brother" move: idenitity never existed
+
+  v/Identities
+
+  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts up until now
+                           ids]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts-for-multiple-ids (assoc db :ds conn) ids {}))
+      (find-facts-for-multiple-ids db ids {})))
+
+  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts with options
+                           ids
+                           opts]
+    (if-not outer-tx?
+      (with-open [conn (jdbc/get-connection ds)]
+        (find-facts-for-multiple-ids (assoc db :ds conn) ids opts))
+      (find-facts-for-multiple-ids db ids {}))))
 
 (defn connect
   ([ds]
