@@ -192,4 +192,4 @@
           {:verter/id :universe/one :suns 42 :planets #{:one :two :three}}]
 
          (tt/without-ts
-           (v/facts-for-multiple-ids tt/conn [:universe/one :universe/three])))))
+           (v/multi-facts tt/conn [:universe/one :universe/three])))))

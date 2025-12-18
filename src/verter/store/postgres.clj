@@ -109,14 +109,14 @@
 
   v/Multi
 
-  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts up until now
+  (multi-facts [{:keys [ds] :as db}                       ;; find facts up until now
                            ids]
     (if-not outer-tx?
       (with-open [conn (jdbc/get-connection ds)]
         (find-facts-for-multiple-ids (assoc db :ds conn) ids {}))
       (find-facts-for-multiple-ids db ids {})))
 
-  (facts-for-multiple-ids [{:keys [ds] :as db}                       ;; find facts with options
+  (multi-facts [{:keys [ds] :as db}                       ;; find facts with options
                            ids
                            opts]
     (if-not outer-tx?

@@ -17,7 +17,7 @@
      "'big brother' move: the idenitity never existed"))
 
 (defprotocol Multi
-  (facts-for-multiple-ids [this ids]
+  (multi-facts [this ids]
     [this ids opts]
     "find the facts for multiple identities in a single call"))
 

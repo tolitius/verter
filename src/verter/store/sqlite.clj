@@ -106,10 +106,10 @@
 
   v/Multi
 
-  (facts-for-multiple-ids [this ids]
+  (multi-facts [this ids]
     (find-facts-for-multiple-ids this ids {}))
 
-  (facts-for-multiple-ids [this ids opts]
+  (multi-facts [this ids opts]
     (find-facts-for-multiple-ids this ids opts)))
 
 (defn connect [ds opts]
