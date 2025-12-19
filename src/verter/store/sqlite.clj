@@ -69,7 +69,7 @@
                    update-insts
                    (partial v/from-row opts)))))))
 
-(defn- find-facts-for-multiple-ids
+(defn- find-facts-for-ids
   "find all the facts about identity upto a certain time"
   [{:keys [ds schema queries]}
    ids
@@ -107,10 +107,10 @@
   v/Multi
 
   (multi-facts [this ids]
-    (find-facts-for-multiple-ids this ids {}))
+    (find-facts-for-ids this ids {}))
 
   (multi-facts [this ids opts]
-    (find-facts-for-multiple-ids this ids opts)))
+    (find-facts-for-ids this ids opts)))
 
 (defn connect [ds opts]
    (->Sqlite ds

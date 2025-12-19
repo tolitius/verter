@@ -180,7 +180,7 @@
          (tt/without-ts
            (v/facts tt/conn :universe/sixty-six)))))
 
-(deftest find-facts-for-multiple-ids
+(deftest find-facts-for-ids
   (v/add-facts tt/conn [{:verter/id :universe/one :suns 12 :planets #{:one :two :three}}
                         [{:verter/id :universe/two :suns 3 :life? true} #inst "2019-09-09"]
                         {:verter/id :universe/sixty-six :answer 42}])

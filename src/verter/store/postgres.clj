@@ -60,7 +60,7 @@
                         {:return-keys true :builder-fn jdbcr/as-unqualified-lower-maps})
          (mapv (partial v/from-row opts)))))
 
-(defn- find-facts-for-multiple-ids
+(defn- find-facts-for-ids
   "find all the facts about multiple identities upto a certain time"
   [{:keys [ds schema queries]}
    ids
@@ -113,16 +113,16 @@
                            ids]
     (if-not outer-tx?
       (with-open [conn (jdbc/get-connection ds)]
-        (find-facts-for-multiple-ids (assoc db :ds conn) ids {}))
-      (find-facts-for-multiple-ids db ids {})))
+        (find-facts-for-ids (assoc db :ds conn) ids {}))
+      (find-facts-for-ids db ids {})))
 
   (multi-facts [{:keys [ds] :as db}                       ;; find facts with options
                            ids
                            opts]
     (if-not outer-tx?
       (with-open [conn (jdbc/get-connection ds)]
-        (find-facts-for-multiple-ids (assoc db :ds conn) ids opts))
-      (find-facts-for-multiple-ids db ids {}))))
+        (find-facts-for-ids (assoc db :ds conn) ids opts))
+      (find-facts-for-ids db ids {}))))
 
 (defn connect
   ([ds]
