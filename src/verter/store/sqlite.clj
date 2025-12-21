@@ -77,7 +77,7 @@
     :or {upto (vt/now)}
     :as opts}]
   (let [sql (-> queries
-                :find-facts-for-multiple-keys-up-to
+                :find-facts-for-keys-up-to
                 (q/with-params {:keys {:as (q/seq->in-params ids)}}))]
     (with-open [conn (jdbc/get-connection ds)]
       (->> (jdbc/execute! conn [sql upto]

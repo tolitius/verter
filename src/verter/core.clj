@@ -25,7 +25,7 @@
   (q/make-query-map [:create-institute-of-time
                      :record-transaction
                      :find-facts-up-to
-                     :find-facts-for-multiple-keys-up-to
+                     :find-facts-for-keys-up-to
                      :add-facts
                      :obliterate-identity]
                     {:path (str "verter/store/" store)}))
