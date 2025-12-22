@@ -1,5 +1,15 @@
 # changelog
 
+## 0.1.22
+###### Mon Dec 22 00:47:36 2025 +0530
+
+* add Multi protocol to read facts for multiple identities
+
+## 0.1.21
+###### Fri Nov 21 00:03:27 2025 +0530
+
+* add add-children to atomically add many
+
 ## 0.1.20
 ###### Tue Oct 14 00:42:24 2025 -0600
 
